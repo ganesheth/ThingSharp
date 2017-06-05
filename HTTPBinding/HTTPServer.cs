@@ -1,0 +1,159 @@
+﻿using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Text;
+using System.Threading.Tasks;
+using ThingSharp.Types;
+
+namespace ThingSharp.Bindings
+{
+    public class HTTPBinding : ProtocolBinding
+    {
+        private BackgroundWorker mListeningThread;
+        private string[] prefixes;
+        HttpListener listener;
+        IBindingClient client;
+        public HTTPBinding( string[] prefixes)
+        {
+            this.prefixes = prefixes;
+            mListeningThread = new BackgroundWorker();
+            mListeningThread.DoWork += ListeningThread_DoWork;
+        }
+
+        public override void AddClient(IBindingClient client)
+        {
+            this.client = client;
+        }
+
+        private class ValueObject {
+            public Object value { get; set; }
+        }
+
+        private class HypermediaLinks
+        {
+            public Object links;
+        }
+
+        private class UpdateResponse
+        {
+            public Object error { get; set; }
+        }
+
+        public void Listen()
+        {
+            if (!HttpListener.IsSupported)
+            {
+                Console.WriteLine("Windows XP SP2 or Server 2003 is required to use the HttpListener class.");
+                return;
+            }
+            // URI prefixes are required,
+            // for example "http://contoso.com:8080/index/".
+            if (prefixes == null || prefixes.Length == 0)
+                throw new ArgumentException("prefixes");
+
+            // Create a listener.
+            listener = new HttpListener();
+            // Add the prefixes.
+            foreach (string s in prefixes)
+            {
+                listener.Prefixes.Add(s);
+            }
+            while (true)
+            {
+                Console.WriteLine("Listening...");
+                listener.Start();
+                if (!listener.IsListening)
+                    break;
+                // Note: The GetContext method blocks while waiting for a request. 
+                HttpListenerContext context = listener.GetContext();
+                HttpListenerRequest request = context.Request;
+                // Obtain a response object.
+                HttpListenerResponse response = context.Response;
+                // Construct a response.
+                string responseString = "<HTML><BODY> Hello world!</BODY></HTML>";
+                byte[] buffer = System.Text.Encoding.UTF8.GetBytes(responseString);
+
+                Object r;
+                if (client != null)
+                {
+                    if (request.HttpMethod == "GET")
+                    {
+                        try
+                        {
+                            r = client.Read(request.Url);
+                            if (!(r is Thing || r is List<HypermediaLink>))
+                            {
+                                ValueObject valObj = new ValueObject() { value = r };
+                                r = JsonConvert.SerializeObject(valObj);
+                            }
+                            else if(r is Thing)
+                            {
+                                r = JsonConvert.SerializeObject(r);
+                            }
+                            else if(r is List<HypermediaLink>)
+                            {
+                                HypermediaLinks links = new HypermediaLinks() { links = r };
+                                r = JsonConvert.SerializeObject(links);
+                            }
+                            response.StatusCode = (int)HttpStatusCode.OK;
+                        }
+                        catch (Exception e)
+                        {
+                            response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                            r = e.Message;
+                        }
+                        buffer = System.Text.Encoding.UTF8.GetBytes(r.ToString());
+                    }
+                    else if (request.HttpMethod == "PUT")
+                    {
+                        UpdateResponse ur = new UpdateResponse() { error = null };
+                        try
+                        {
+                            TextReader reader = new StreamReader(request.InputStream);
+                            String content = reader.ReadToEnd();
+                            ValueObject valObj = JsonConvert.DeserializeObject<ValueObject>(content);
+                            r = client.Write(request.Url, valObj.value);
+                            response.StatusCode = (int)HttpStatusCode.Accepted;
+                        }
+                        catch (Exception e)
+                        {
+                            r = e.Message;
+                            ur.error = e;
+                            response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                        }
+                        String urs = JsonConvert.SerializeObject(ur);
+                        buffer = System.Text.Encoding.UTF8.GetBytes(urs);
+                    }
+                }
+                // Get a response stream and write the response to it.
+                response.ContentLength64 = buffer.Length;
+                response.ContentType = "application/json";
+                System.IO.Stream output = response.OutputStream;
+                output.Write(buffer, 0, buffer.Length);
+                // You must close the output stream.
+                output.Close();
+            }
+
+        }
+
+        public override void StartListening()
+        {
+            mListeningThread.RunWorkerAsync();
+        }
+
+        private void ListeningThread_DoWork(object sender, DoWorkEventArgs e)
+        {
+            Listen();
+        }
+
+        public override void StopListening()
+        {
+            listener.Stop();
+            //mListeningThread.CancelAsync();
+        }
+    }
+}
