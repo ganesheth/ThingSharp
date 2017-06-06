@@ -103,7 +103,7 @@ namespace ThingSharp.Bindings
                         }
                         catch (Exception e)
                         {
-                            response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                            response.StatusCode = (int)GetStatusCodeForException(e); ;
                             r = e.Message;
                         }
                         buffer = System.Text.Encoding.UTF8.GetBytes(r.ToString());
@@ -123,7 +123,7 @@ namespace ThingSharp.Bindings
                         {
                             r = e.Message;
                             ur.error = e;
-                            response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                            response.StatusCode = (int)GetStatusCodeForException(e);
                         }
                         String urs = JsonConvert.SerializeObject(ur);
                         buffer = System.Text.Encoding.UTF8.GetBytes(urs);
@@ -138,6 +138,16 @@ namespace ThingSharp.Bindings
                 output.Close();
             }
 
+        }
+
+        public HttpStatusCode GetStatusCodeForException(Exception e)
+        {
+            if (e is Resource.ResourceNotFoundException)
+                return HttpStatusCode.NotFound;
+            else if (e is Resource.ResourceOperationNotAllowedException)
+                return HttpStatusCode.MethodNotAllowed;
+            else
+                return HttpStatusCode.InternalServerError;
         }
 
         public override void StartListening()

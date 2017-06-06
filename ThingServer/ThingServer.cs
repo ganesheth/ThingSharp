@@ -32,23 +32,35 @@ namespace ThingSharp.Server
             mBinding.StopListening();
         }
 
+        private List<HypermediaLink> GetThingLinks()
+        {
+            List<HypermediaLink> thingUris = new List<HypermediaLink>();
+            foreach (Resource r in mThings)
+            {
+                thingUris.Add(new HypermediaLink() { uri = r.Uri, rel = "td" });
+            }
+            return thingUris;
+        }
+
         public object Read(Uri uri)
         {
             if (uri.AbsolutePath == "/")
             {
-                List<HypermediaLink> thingUris = new List<HypermediaLink>();
-                foreach(Resource r in mThings)
-                {
-                    thingUris.Add(new HypermediaLink() { uri = r.Uri, rel = "td"});
-                }
-                return thingUris;
+                return GetThingLinks();
             }
             Resource resource = mThings.ResolveUrl(uri);
 
             if (resource != null)
-                return mAdapter.Read(resource);
+                try
+                {
+                    return mAdapter.Read(resource);
+                }
+                catch (Exception)
+                {
+                    throw new Resource.ResourceOperationFailedException();
+                }
             else
-                throw new Exception("Resource not found") ;
+                throw new Resource.ResourceNotFoundException();
         }
 
 
@@ -56,10 +68,23 @@ namespace ThingSharp.Server
         {
             Resource resource = mThings.ResolveUrl(uri);
 
+            if (resource is Thing)
+            {
+                throw new Resource.ResourceOperationNotAllowedException();
+            }
             if (resource != null)
-                return mAdapter.Write(resource,value);
+            {
+                try
+                {
+                     return mAdapter.Write(resource, value);
+                }
+                catch (Exception e)
+                {
+                    throw new Resource.ResourceOperationFailedException();
+                }
+            }
             else
-                throw new Exception("Resource not found");
+                throw new Resource.ResourceNotFoundException() {Message = "Resource not found"};
         }
 
         public ThingContainer ResourceContainer {

@@ -11,6 +11,16 @@ namespace ThingSharp.Types
     [JsonObject(MemberSerialization.OptIn)]
     public abstract class Resource
     {
+        [JsonObject(MemberSerialization.OptIn)]
+        public class ResourceNotFoundException : Exception
+        {
+            [JsonProperty(PropertyName = "message")]
+            public new String Message { get; set; }
+        };
+
+        public class ResourceOperationNotAllowedException : Exception { };
+        public class ResourceOperationFailedException : Exception { };
+
         protected Uri mUri;
 
         protected ResourceCollection mChildren = new ResourceCollection();
@@ -34,7 +44,7 @@ namespace ThingSharp.Types
 
         public virtual Resource ResolveUrl(Uri url)
         {
-            if (url == mUri)
+            if (url.Equals(mUri))
                 return this;
             else
                 return mChildren.FirstOrDefault(p => p.ResolveUrl(url) != null);
