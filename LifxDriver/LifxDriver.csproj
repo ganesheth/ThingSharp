@@ -32,19 +32,22 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Colorspace">
-      <HintPath>references\Colorspace.dll</HintPath>
+      <HintPath>..\..\..\..\..\Programming\ThingSharp\ThingSharp\LifxDriver\references\Colorspace.dll</HintPath>
     </Reference>
     <Reference Include="LifxMvc.Contracts">
-      <HintPath>references\LifxMvc.Contracts.dll</HintPath>
+      <HintPath>..\..\..\..\..\Programming\ThingSharp\ThingSharp\LifxDriver\references\LifxMvc.Contracts.dll</HintPath>
     </Reference>
     <Reference Include="LifxMvc.Domain">
-      <HintPath>references\LifxMvc.Domain.dll</HintPath>
+      <HintPath>..\..\..\..\..\Programming\ThingSharp\ThingSharp\LifxDriver\references\LifxMvc.Domain.dll</HintPath>
     </Reference>
     <Reference Include="LifxMvc.Domain.Mocks">
-      <HintPath>references\LifxMvc.Domain.Mocks.dll</HintPath>
+      <HintPath>..\..\..\..\..\Programming\ThingSharp\ThingSharp\LifxDriver\references\LifxMvc.Domain.Mocks.dll</HintPath>
     </Reference>
     <Reference Include="LifxMvc.Services">
-      <HintPath>references\LifxMvc.Services.dll</HintPath>
+      <HintPath>..\..\..\..\..\Programming\ThingSharp\ThingSharp\LifxDriver\references\LifxMvc.Services.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\..\..\..\..\Programming\ThingSharp\ThingSharp\References\NewtonSoft\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />

@@ -17,14 +17,14 @@ namespace ThingSharp.Drivers
         private DiscoveryService mDiscoveryService;
         private BulbService mBulbService;
 
-        public LifxDriver()
+        public LifxDriver(IPAddress localEndpoint)
         {
+            DiscoveryUdpHelper.LocalEndpointIpAddress = localEndpoint;
             mDiscoveryService = new DiscoveryService();
             mBulbService = new BulbService();
         }
         public List<Object> DiscoverBulbs(int expectedNumber)
-        {
-            DiscoveryUdpHelper.LocalEndpointIpAddress = new IPAddress(new byte[] { 192, 168, 0,121 });
+        {            
             List<IBulb> bulbs = mDiscoveryService.DiscoverAsync(1);
             List<object> bulbIds = new List<object>();
             foreach(IBulb bulb in bulbs)

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using ThingSharp.Bindings;
 using ThingSharp.Drivers;
 using ThingSharp.Server;
@@ -11,8 +12,12 @@ namespace ThingSharp.TestAdapter
 {
     class LifxAdapter : Adapter
     {
-        private LifxDriver driver = new LifxDriver();
+        private LifxDriver driver;
 
+        public LifxAdapter(IPAddress localEndpoint)
+        {
+            driver = new LifxDriver(localEndpoint);
+        }
         public override void Initialize(Uri baseUri)
         {
             Console.WriteLine("Initializing adapter..");

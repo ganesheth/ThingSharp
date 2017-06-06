@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Net;
 using ThingSharp.Bindings;
 using ThingSharp.Server;
 using ThingSharp.Types;
@@ -11,14 +12,18 @@ namespace ThingSharp.TestAdapter
     {
         static void Main(string[] args)
         {
+            IPAddress localEndpoint = IPAddress.Parse(args[0]);
+            int httpPort = int.Parse(args[1]);
+            String httpEnpoint = String.Format("http://{0}:{1}/", localEndpoint.ToString(), httpPort);
+
             //First we choose what kind of protocol binding we want on top.
             //At the moment we have HTTP in stock, but expect WebSockets, CoAP etc next season.
-            Uri baseUri = new Uri("http://192.168.0.121:8080/");
-            ProtocolBinding httpBinding = new HTTPBinding(new string[] { "http://192.168.0.121:8080/"});
+            Uri baseUri = new Uri(httpEnpoint);
+            ProtocolBinding httpBinding = new HTTPBinding(new string[] { httpEnpoint});
 
             //Next we create an Adapter. The Adapter is the stuff you will develop. It contains
             // a "logical adaption" and a driver layer.
-            Adapter adapter1 = new LifxAdapter();
+            Adapter adapter1 = new LifxAdapter(localEndpoint);
 
             //Now, we glue the protocol binding and the adapter using the ThingServer.
             ThingServer server = new ThingServer(httpBinding, adapter1);
