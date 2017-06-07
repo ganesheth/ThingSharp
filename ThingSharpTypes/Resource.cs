@@ -39,7 +39,7 @@ namespace ThingSharp.Types
 
         }
 
-        [JsonProperty(PropertyName ="uri")]
+        [JsonProperty(PropertyName ="uri", Order = 2)]
         public virtual Uri Uri { get { return mUri; } }
 
         public virtual Resource ResolveUrl(Uri url)
@@ -55,10 +55,10 @@ namespace ThingSharp.Types
         
         public Type ValueType { get; set; }
 
-        [JsonProperty(PropertyName = "name", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty(PropertyName = "name", NullValueHandling = NullValueHandling.Ignore, Order = 3)]
         public string Name { get; set; }
 
-        [JsonProperty(PropertyName = "valueType", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty(PropertyName = "valueType", NullValueHandling = NullValueHandling.Ignore, Order = 4)]
         public object XsdType
         {
             get

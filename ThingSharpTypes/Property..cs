@@ -52,5 +52,38 @@ namespace ThingSharp.Types
 
         [JsonProperty(PropertyName = "max", NullValueHandling = NullValueHandling.Ignore)]
         public T Max { get; set; }
+
+        [JsonProperty(PropertyName = "writable", NullValueHandling = NullValueHandling.Ignore)]
+        public bool Writable { get; set; }
+
+        private static readonly HashSet<Type> m_numTypes = new HashSet<Type>
+        {
+            typeof(int),  typeof(double),  typeof(decimal),
+            typeof(long), typeof(short),   typeof(sbyte),
+            typeof(byte), typeof(ulong),   typeof(ushort),
+            typeof(uint), typeof(float)
+        };
+
+        public static bool IsNumeric(Object o)
+        {
+            var IsNumeric = false;
+
+            if (o != null)
+            {
+                IsNumeric = m_numTypes.Contains(o.GetType());
+            }
+
+            return IsNumeric;
+        }
+
+        public bool ShouldSerializeMin()
+        {
+            return IsNumeric(this.Value);
+        }
+
+        public bool ShouldSerializeMax()
+        {
+            return IsNumeric(this.Value);
+        }
     }
 }

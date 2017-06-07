@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using ThingSharp.Types;
 
 namespace ThingSharp.TestAdapter
@@ -13,13 +9,13 @@ namespace ThingSharp.TestAdapter
         {
             CC_OMName = "GMS_OM_LED_LAMP";
             
-            mBrightness = new Property<float>(uri, "Brightness") { Name = "Brightness", Units = "Lux" };
+            mBrightness = new Property<float>(uri, "Brightness") { Name = "Light Brightness", Units = "Lux", Writable = true, Min = 0, Max = 100 };
             AddProperty(mBrightness);
 
-            mLightPower = new Property<bool>(uri, "Switch") { Name = "Switch"};
+            mLightPower = new Property<bool>(uri, "Switch") { Name = "Light Switch", Writable = true };
             AddProperty(mLightPower);
 
-            mColor = new Property<string>(uri, "Color") { Name = "Color" };
+            mColor = new Property<string>(uri, "Color") { Name = "Light Color in html RGB", Writable = true };
             AddProperty(mColor);
         }
 

@@ -10,13 +10,21 @@ namespace ThingSharp.Types
     [JsonObject(MemberSerialization.OptIn)]
     public class Thing : Resource
     {
+        public class DefaultContext
+        {
+            public String wot = "https://w3c.github.io/wot/w3c-wot-td-ontology.owl#";
+            public string cc = "http://siemens.com/cc";
+        }
 
         public Thing(Uri uri) : base(uri)
         {
-            Contexts = new List<Context>();
-            Contexts.Add(new Context("wot", @"http://wot.org"));
+            //Contexts = new List<Context>();
+            //Contexts.Add(new Context("wot", @"http://wot.org"));
+            context = new DefaultContext();
         }
 
+        [JsonProperty(PropertyName = "context", NullValueHandling = NullValueHandling.Ignore, Order = 1)]
+        protected virtual DefaultContext context { get; set; }
         //public void AddProperty(Property property) {
             
         //    mChildren.Add(property);
@@ -41,20 +49,21 @@ namespace ThingSharp.Types
                 mChildren.Remove(r);
         }
 
-        [JsonProperty(PropertyName = "id")]
-        public String Id { get; set; }
+        public List<Context> Contexts { get; set; }
 
-        [JsonProperty(PropertyName = "type")]
+        [JsonProperty(PropertyName = "type", NullValueHandling = NullValueHandling.Ignore, Required = Required.DisallowNull, Order = 5)]
         public List<String> Type { get; set; }
 
-        [JsonProperty(PropertyName = "cc:om_name")]
+        [JsonProperty(PropertyName = "id", Order = 6)]
+        public String Id { get; set; }
+
+        [JsonProperty(PropertyName = "cc:om_name", NullValueHandling = NullValueHandling.Ignore, Order = 7)]
         public String CC_OMName { get; set; }
 
-        [JsonProperty(PropertyName ="properties")]
+        [JsonProperty(PropertyName ="properties", Order = 8)]
         public ResourceCollection Properties { get { return base.mChildren; } }
 
-        [JsonProperty(PropertyName = "context")]
-        public List<Context> Contexts { get; set; }
+
 
         public class Context
         {
