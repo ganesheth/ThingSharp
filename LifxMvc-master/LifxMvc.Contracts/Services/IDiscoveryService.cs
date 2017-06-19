@@ -6,6 +6,6 @@ namespace LifxMvc.Services
 {
 	public interface IDiscoveryService : IDisposable
 	{
-		List<IBulb> DiscoverAsync(int expectedCount);
+		void DiscoverAsync();
 	}
 }

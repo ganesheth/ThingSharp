@@ -8,6 +8,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Collections.Concurrent;
 
 namespace LifxMvc.Services.UdpHelper
 {
@@ -35,18 +36,22 @@ namespace LifxMvc.Services.UdpHelper
 		UdpClient UdpClient { get; set; }
 		ManualResetEventSlim StopListeningEvent { get; set; }
 		ManualResetEventSlim IsAvailableEvent { get; set; }
+        IPEndPoint EndPoint;
 
 		public BulbUdpHelper(IPEndPoint ep)
 		{
 			this.StopListeningEvent = new ManualResetEventSlim(false);
 			this.IsAvailableEvent = new ManualResetEventSlim(true);
 			this.UdpClient = this.CreateUdpClient(ep);
+            EndPoint = ep;
 		}
 
 		UdpClient CreateUdpClient(IPEndPoint ep)
 		{
 			var client = new UdpClient(ep.Address.ToString(),
 				ep.Port);
+
+            client.DontFragment = true;
 
 			return client;
 		}
@@ -66,14 +71,29 @@ namespace LifxMvc.Services.UdpHelper
 			task.Start();
 		}
 
+        ConcurrentBag<Task> BulbRequestDataTask { get; set; }
 		public R Send<R>(LifxPacketBase<R> packet, int retries = 0)
 			where R : LifxResponseBase
 		{
+            
+            this.UdpClient.Close();
+            this.UdpClient = this.CreateUdpClient(EndPoint);
+
 			R result = null;
 
-			byte[] data = this.SendImpl(packet);
+            BulbRequestDataTask = new ConcurrentBag<Task>();
+            LifxResponseBase response = null;
+            var action = new Action(() => response = GetResponse(packet.Header.Source));
+            var task = Task.Factory.StartNew(action);
+            BulbRequestDataTask.Add(task);
 
-			var response = this.GetResponse(packet.Header.Source);
+			byte[] data = this.SendImpl(packet);
+            //var response = this.GetResponse(packet.Header.Source);
+
+            var taskArr = BulbRequestDataTask.ToArray();
+            Task.WaitAll(taskArr);
+
+			//var response = this.GetResponse(packet.Header.Source);
 			if (response is R)
 			{
 				result = response as R;
@@ -87,8 +107,8 @@ namespace LifxMvc.Services.UdpHelper
 				}
 			}
 
-			if (null == result)
-				new object();
+            //if (null == result)
+            //    new object();
 			return result;
 		}
 
@@ -124,44 +144,68 @@ namespace LifxMvc.Services.UdpHelper
 				var wait = new ManualResetEventSlim(false);
 				wait.Wait(ts.Milliseconds);
 			}
-		}
+		}        
 
 		LifxResponseBase GetResponse(uint frameSource)
 		{
-			const int TIMEOUT = 500;
-			byte[] data = null;
+            const int TIMEOUT = 200; //cjk
+            byte[] data = null;
 			LifxResponseBase result = null;
 
-			uint responseSource = 0;
-			byte responseSequence = 0;
-			while (responseSource < frameSource)//Compare sources in order to match the packet to the response.
-			{
-				result = null;
-				var asyncResult = this.UdpClient.BeginReceive(null, null);
+            uint responseSource = 0;
+            byte responseSequence = 0;
 
-				var signaled = asyncResult.AsyncWaitHandle.WaitOne(TIMEOUT);
-				if (signaled)
-				{
-					if (asyncResult.IsCompleted)
-					{
-						IPEndPoint sender = new IPEndPoint(IPAddress.Any, 0);
-						data = this.UdpClient.EndReceive(asyncResult, ref sender);
-						TraceData(data);
+            while (responseSource < frameSource)//Compare sources in order to match the packet to the response.
+            {
+                result = null;
+                var asyncResult = this.UdpClient.BeginReceive(null, null);
 
-						result = ResponseFactory.Parse(data, sender);
-						responseSource = result.Source;
-						responseSequence = result.Sequence;
-						result.TraceReceived(this.UdpClient.Client.LocalEndPoint);
-					}
-				}
-				else 
-				{// We've timed out.
-					break;
-				}
-			}
+                var signaled = asyncResult.AsyncWaitHandle.WaitOne(TIMEOUT);
+                if (signaled)
+                {
+                    if (asyncResult.IsCompleted)
+                    {
+                        IPEndPoint sender = new IPEndPoint(IPAddress.Any, 0);
+                        data = this.UdpClient.EndReceive(asyncResult, ref sender);
+                        TraceData(data);
+
+                        result = ResponseFactory.Parse(data, sender);
+                        responseSource = result.Source;
+                        responseSequence = result.Sequence;
+                        result.TraceReceived(this.UdpClient.Client.LocalEndPoint);
+                    }
+                }
+                else
+                {// We've timed out.
+                    break;
+                }
+            }
 
 			return result;
 		}
+
+        LifxResponseBase GetResponse2(uint frameSource)
+        {
+            //const int TIMEOUT = 5; //cjk
+            //byte[] data = null;
+            LifxResponseBase result = null;
+
+            uint responseSource = 0;
+            byte responseSequence = 0;
+
+            while (responseSource < frameSource)//Compare sources in order to match the packet to the response.
+            {
+                IPEndPoint sender = new IPEndPoint(IPAddress.Any, 0);
+                byte[] receivedData = UdpClient.Receive(ref sender);
+                TraceData(receivedData);
+
+                result = ResponseFactory.Parse(receivedData, sender);
+                responseSource = result.Source;
+                responseSequence = result.Sequence;
+                result.TraceReceived(this.UdpClient.Client.LocalEndPoint);
+            }
+            return result;
+        }
 
 		static void test(IAsyncResult asyncResult)
 		{
@@ -197,6 +241,7 @@ namespace LifxMvc.Services.UdpHelper
 
 		public void Dispose()
 		{
+            this.UdpClient.Close();
 			this.UdpClient.Dispose();
 		}
 	}//class 

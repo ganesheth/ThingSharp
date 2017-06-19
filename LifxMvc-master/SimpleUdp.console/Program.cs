@@ -61,7 +61,7 @@ namespace Eric.Morrison
 
     public class UDPListener
     {
-        const string BROADCAST_IP_ADDRESS = "192.168.0.255";
+        const string BROADCAST_IP_ADDRESS = "192.168.1.255";
         const int PORT_NO = 11000;
         private const string Port = "56700";
 

@@ -208,7 +208,7 @@ namespace LifxNet
 					packet = new LightGetPacket(header);
 					break;
 				case PacketType.LightSetColor:
-					packet = new LightSetColorPacket(header, payload);
+                    packet = new LightSetHSBKPacket(header, payload);
 					break;
 				case PacketType.LightSetWaveform:
 					packet = new LightSetWaveformPacket(header, payload);

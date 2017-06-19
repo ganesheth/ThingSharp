@@ -57,8 +57,8 @@ namespace LifxMvc.Controllers
 			List<IBulb> bulbs = new List<IBulb>();
 			//using (var svc = new DiscoveryService())
 			//{
-				bulbs = this.DiscoveryService.DiscoverAsync(1);
-				bulbs.Sort(new BulbComparer());
+                //bulbs = this.DiscoveryService.DiscoverAsync();
+                //bulbs.Sort(new BulbComparer());
 			//}
 			return bulbs;
 		}

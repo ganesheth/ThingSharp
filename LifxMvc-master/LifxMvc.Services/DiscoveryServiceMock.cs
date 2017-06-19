@@ -10,9 +10,9 @@ namespace LifxMvc.Services
 {
 	public class DiscoveryServiceMock : IDiscoveryService, IDisposable
 	{
-		public List<IBulb> DiscoverAsync(int expectedCount)
+		public void DiscoverAsync()
 		{
-			return CreateBulbs();
+			CreateBulbs();
 		}
 
 		List<IBulb> CreateBulbs()

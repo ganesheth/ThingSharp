@@ -23,8 +23,8 @@ namespace LifxMvc.Domain
 			}
 			else
 			{
-				var rgb = new ColorRGB(wrgb.ToArgb());
-				var hsl = new ColorHSL(rgb);
+                ColorRGB rgb = new ColorRGB(wrgb.ToArgb());
+                var hsl = new ColorHSL(rgb);
 				result = new HSBK(hsl.H, hsl.S, hsl.L);
 			}
 			return result;

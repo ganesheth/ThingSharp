@@ -72,7 +72,7 @@ namespace LifxMvc.Services
 			throw new NotImplementedException();
 		}
 
-		public void LightGet(IBulb bulb)
+        public void LightGet(IBulb bulb, bool forceUpdate = false)
 		{
 			throw new NotImplementedException();
 		}

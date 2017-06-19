@@ -92,10 +92,10 @@ namespace LifxMvc.Models
 			
 
 		}
-		[OnSerializing]
-		void OnSerializing(StreamingContext ctx)
-		{
-		}
+        [OnSerializing]
+        void OnSerializing(StreamingContext ctx)
+        {
+        }
 
 	}//class
 

@@ -15,74 +15,106 @@ namespace LifxMvc.Services
 	public class DiscoveryService : IDisposable, IDiscoveryService
 	{
 		ConcurrentBag<IBulb> Bulbs { get; set; }
+        ConcurrentBag<IBulb> NewBulbList { get; set; }
 		ManualResetEventSlim Wait { get; set; }
 
+        DiscoveryUdpHelper _udp = null;
 
+        Stopwatch _sw;
 
-		public List<IBulb> DiscoverAsync(int expectedCount)
+        public List<IBulb> GetDiscoveredBulbs()
+        {
+            List<IBulb> bulbList = new List<IBulb>();
+
+            // Copy the bulb list send back because we are going to clear out the new bulb list before returning
+            foreach (IBulb b in NewBulbList)
+            {
+                bulbList.Add(b);                
+            }
+
+            // Now that we got the new bulbs, clear the list
+            IBulb item;
+            while (NewBulbList.TryTake(out item)) ;
+
+            return bulbList;
+        }
+
+		public void DiscoverAsync()
 		{
-			this.Bulbs = new ConcurrentBag<IBulb>();
-			this.BulbInitializationTasks = new ConcurrentBag<Task>();
-			var packet = new DeviceGetServicePacket();
+			Bulbs = new ConcurrentBag<IBulb>();
+            NewBulbList = new ConcurrentBag<IBulb>();
+            //BulbInitializationTasks = new ConcurrentBag<Task>();
+            var packet = new DeviceGetServicePacket();
 
-			var udp = UdpHelperManager.Instance.DiscoveryUdpHelper;
-			udp.DeviceDiscovered += Udp_DeviceDiscovered;
+            _udp = UdpHelperManager.Instance.DiscoveryUdpHelper;
+            //_udp.DeviceDiscovered += Udp_DeviceDiscovered;
 
-			//this.Wait = new ManualResetEventSlim(false);
-			const int TIMEOUT = 2 * 1000;
-			udp.DiscoverBulbs(packet, expectedCount, TIMEOUT);
-			//var success = this.Wait.Wait(TIMEOUT);
-
-			this._sw = Stopwatch.StartNew();
-			var taskArr = this.BulbInitializationTasks.ToArray();
-			Task.WaitAll(taskArr);
-			_sw.Stop();
-			Debug.WriteLine("DiscoveryService: DiscoverAsync " + _sw.Elapsed);
+            //this.Wait = new ManualResetEventSlim(false);
+            //const int TIMEOUT = 2 * 1000;
+            _udp.DiscoverBulbs(this, packet);
+            //var success = this.Wait.Wait(TIMEOUT);
+                                    
+            //_sw = Stopwatch.StartNew();
+            //var taskArr = BulbInitializationTasks.ToArray();
+			////////////////////////////////////////////////////////////////////////////////////CJKTask.WaitAll(taskArr);
+            //_sw.Stop();
+            //Debug.WriteLine("DiscoveryService: DiscoverAsync " + _sw.Elapsed);
 
 			//Debug.Assert(Bulbs.Count == expectedCount);
-			var result = this.Bulbs.ToList();
+            //var result = Bulbs.ToList();
 
-			return result;
+            //return result;
 		}
 
-		Stopwatch _sw;
-		ConcurrentBag<Task> BulbInitializationTasks { get; set; }
-		private void Udp_DeviceDiscovered(object sender, DiscoveryEventArgs e)
+		
+        //ConcurrentBag<Task> BulbInitializationTasks { get; set; }
+		public void Udp_DeviceDiscovered(object sender, DiscoveryEventArgs e)
 		{
-			var action = new Action(()=> this.Udp_DeviceDiscoveredAsync(sender, e));
-			var task = Task.Factory.StartNew(action);
-			BulbInitializationTasks.Add(task);
-
+            //var ctx = e.DiscoveryContext;
+            //if (null == Bulbs.FirstOrDefault(x => x.IPEndPoint.ToString() == ctx.Sender.ToString()))
+            //{
+                var action = new Action(() => Udp_DeviceDiscoveredAsync(sender, e));
+                var task = Task.Factory.StartNew(action);
+                //BulbInitializationTasks.Add(task);
+            //}
 		}
 
-		private void Udp_DeviceDiscoveredAsync(object sender, DiscoveryEventArgs e)
-		{
-			var ctx = e.DiscoveryContext;
-			if (null == this.Bulbs.FirstOrDefault(x => x.IPEndPoint.ToString() == ctx.Sender.ToString()))
-			{
-				var bulb = new Bulb()
-				{
-					IPEndPoint = ctx.Sender,
-					Service = ctx.Response.Service,
-					Port = ctx.Response.Port,
-					TargetMacAddress = ctx.Response.TargetMacAddress,
-					LastSeen = DateTime.UtcNow
-				};
+        private void Udp_DeviceDiscoveredAsync(object sender, DiscoveryEventArgs e)
+        {
+            var ctx = e.DiscoveryContext;
 
-				this.Bulbs.Add(bulb);
-				var bulbSvc = new BulbService();
-				bulbSvc.Initialize(bulb);
+            var bulb = new Bulb()
+            {
+                IPEndPoint = ctx.Sender,
+                Service = ctx.Response.Service,
+                Port = ctx.Response.Port,
+                TargetMacAddress = ctx.Response.TargetMacAddress,
+                LastSeen = DateTime.UtcNow
+            };
 
-				Debug.WriteLine(Bulbs.Count);
-				if (this.Bulbs.Count == ctx.ExpectedCount)
-				{
-					var udp = sender as DiscoveryUdpHelper;
-					udp.DeviceDiscovered -= this.Udp_DeviceDiscovered;
-					ctx.CancelDiscovery = true;
-					//this.Wait.Set();
-				}
-			}
-		}
+            //Bulbs.Add(bulb);
+            var bulbSvc = new BulbService();
+            bulbSvc.Initialize(bulb);
+
+            //int retries = 0;
+            //while (string.IsNullOrEmpty(bulb.Label) && retries++ < 5)
+            //{
+            //    bulbSvc.Initialize(bulb);
+            //}
+
+            Bulbs.Add(bulb);
+            NewBulbList.Add(bulb); // gets reset when ThingServer requests new found bulbs
+
+            Debug.WriteLine(Bulbs.Count);
+            //if (Bulbs.Count == ctx.ExpectedCount)
+            //{
+            //    var udp = sender as DiscoveryUdpHelper;
+            //    udp.DeviceDiscovered -= Udp_DeviceDiscovered;
+            //    ctx.CancelDiscovery = true;
+            //    //this.Wait.Set();
+            //}
+            //}
+        }
 
 
 

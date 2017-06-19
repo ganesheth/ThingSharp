@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace LifxNet
 {
-	public class LightSetColorPacket : LifxPacketBase<LightStateResponse>
+	public class LightSetHSBKPacket : LifxPacketBase<LightStateResponse>
 	{
 		override public PacketType MessageType { get { return PacketType.LightSetColor; } }
 
@@ -19,20 +19,20 @@ namespace LifxNet
 
 		public UInt32 Duration { get; set; }
 
-		public LightSetColorPacket(IBulb bulb, IHSBK hsbk)
+		public LightSetHSBKPacket(IBulb bulb)
 			: base(bulb)
 		{
-			if (null == hsbk)
-				throw new ArgumentNullException();
+			//if (null == hsbk)
+			//	throw new ArgumentNullException();
 
-			this.Hue = hsbk.Hue;
-			this.Saturation = hsbk.Saturation;
-			this.Brightness = hsbk.Brightness;
-			this.Kelvin = hsbk.Kelvin;
+			this.Hue = bulb.Hue;
+			this.Saturation = bulb.Saturation;
+            this.Brightness = bulb.Brightness;
+            this.Kelvin = bulb.Kelvin;
 
 			this.Header.ResponseRequired = true;
 		}
-		public LightSetColorPacket(FrameHeader header, byte[] payload)
+        public LightSetHSBKPacket(FrameHeader header, byte[] payload)
 			: base(header)
 		{
 			Reserved = payload[0];

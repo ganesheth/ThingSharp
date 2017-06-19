@@ -19,7 +19,7 @@ namespace LifxMvc.Services
 		void GetWifiFirmware(IBulb bulb);
 		void GetWifiInfo(IBulb bulb);
 		void Initialize(IBulb bulb);
-		void LightGet(IBulb bulb);
+        void LightGet(IBulb bulb, bool forceUpdate = false);
 		bool LightGetPower(IBulb bulb);
 		//void LightSetColor(IBulb bulb, IHSBK hsbk);
 		void LightSetColor(IBulb bulb, Color color);
