@@ -72,33 +72,51 @@ namespace LifxMvc.Services
             }
             else
             {
-                // return unsuccesffull message
+                // return unsuccesfull message
             }
 		}
         //--------------------------------------------------------------------
 
-		public void Initialize(IBulb bulb)
+		public bool Initialize(IBulb bulb)
 		{
 			this.DeviceGetVersion(bulb);
-			this.LightGet(bulb);
+			bool gotLightData = this.LightGet(bulb, true);
 			//this.DeviceGetGroup(bulb);
 			//this.DeviceGetLocation(bulb);
+
+            return gotLightData;
 		}
         //--------------------------------------------------------------------
 
-		public void LightGet(IBulb bulb, bool forceUpdate = false)
+		public bool LightGet(IBulb bulb, bool forceUpdate = false)
 		{
+            bool gotResponse = false;
+
             // If the time difference since the last time we read the light state properties is negative, or
             // greater than 15 seconds (15000 milliseconds), then get the data from the light again.
             // Else, just use the old data
             if (IsOkToReadFromBulb(bulb.LastStateRequest) || forceUpdate)
             {
+                // update the Last  Request time first so other threads that coming in 
+                // immediatly don't try reading as well
+                bulb.LastStateRequest = DateTime.UtcNow;
+
                 var packet = new LightGetPacket(bulb);
                 var response = this.Send(bulb, packet);
 
-                if(response != null)
-                    bulb.LastStateRequest = DateTime.UtcNow;
+                if (response != null)
+                {                    
+                    gotResponse = true;
+                }
+                else
+                {
+                    // If there was an issue reading, then set date time Min Value so
+                    // we try reading with the next request instead of waiting for the timeout.
+                    bulb.LastStateRequest = DateTime.MinValue;
+                }
             }
+
+            return gotResponse;
 		}
         //--------------------------------------------------------------------
 
@@ -198,19 +216,27 @@ namespace LifxMvc.Services
 		}
         //--------------------------------------------------------------------
 
-        public bool LightGetPower(IBulb bulb)
+        public uint? LightGetPower(IBulb bulb)
         {
             // Only read from the bulb every 15 seconds. This helps eliminate
             // every property asking the bulb for the same info.
             if (IsOkToReadFromBulb(bulb.LastPowerRequest))
             {
+                // update the Last  Request time first so other threads that coming in 
+                // immediatly don't try reading as well
+                bulb.LastPowerRequest = DateTime.UtcNow;
+
                 var packet = new LightGetPowerPacket(bulb);
                 var response = this.Send(bulb, packet);
-                if (response != null)
-                    bulb.LastPowerRequest = DateTime.UtcNow;
+                if (response == null)
+                {
+                    // If there was an issue reading, then set date time Min Value so
+                    // we try reading with the next request instead of waiting for the timeout.
+                    bulb.LastPowerRequest = DateTime.MinValue;
+                }
             }
 
-            return bulb.IsOn;
+            return bulb.isOffline ? null : (uint?)Convert.ToInt32(bulb.IsOn);
         }
         //--------------------------------------------------------------------
 
@@ -246,10 +272,9 @@ namespace LifxMvc.Services
             // Get the latest Bulb HSBK settings 
             this.LightGet(bulb);
 
-            string colorString = null;
-            colorString = String.Format("{0:X2}{1:X2}{2:X2}{3:X2}", bulb.Color.A, bulb.Color.R, bulb.Color.G, bulb.Color.B);
+            string colorString = String.Format("{0:X2}{1:X2}{2:X2}{3:X2}", bulb.Color.A, bulb.Color.R, bulb.Color.G, bulb.Color.B);
 
-            return colorString;
+            return bulb.isOffline ? null : colorString;
         }
         //--------------------------------------------------------------------
 
@@ -277,11 +302,11 @@ namespace LifxMvc.Services
 		}
         //--------------------------------------------------------------------
 
-        public ushort LightGetBrightness(IBulb bulb)
+        public ushort? LightGetBrightness(IBulb bulb)
         {
             // Get the latest Bulb HSBK settings (could have change from another source)
             this.LightGet(bulb);
-            return bulb.Brightness;
+            return bulb.isOffline ? null : (ushort?)bulb.Brightness;
         }
         //--------------------------------------------------------------------
 
@@ -302,11 +327,11 @@ namespace LifxMvc.Services
         }
         //--------------------------------------------------------------------
 
-        public ushort LightGetSaturation(IBulb bulb)
+        public ushort? LightGetSaturation(IBulb bulb)
         {
             // Get the latest Bulb HSBK settings (could have change from another source)
             this.LightGet(bulb);
-            return bulb.Saturation;
+            return bulb.isOffline ? null : (ushort?)bulb.Saturation;
         }
         //--------------------------------------------------------------------
 
@@ -327,11 +352,11 @@ namespace LifxMvc.Services
         }
         //--------------------------------------------------------------------
 
-        public ushort LightGetKelvin(IBulb bulb)
+        public ushort? LightGetKelvin(IBulb bulb)
         {
             // Get the latest Bulb HSBK settings (could have change from another source)
             this.LightGet(bulb);
-            return bulb.Kelvin;
+            return bulb.isOffline ? null : (ushort?)bulb.Kelvin;
         }
         //--------------------------------------------------------------------
 

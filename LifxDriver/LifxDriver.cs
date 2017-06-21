@@ -30,25 +30,20 @@ namespace ThingSharp.Drivers
 
         public void DiscoverBulbs()
         {
+            // Tell the Lifx Service to start discovering bulbs
             mDiscoveryService.DiscoverAsync();
-            //List<object> bulbIds = new List<object>();
-            //foreach(IBulb bulb in bulbs)
-            //{
-            //    bulbIds.Add(bulb);
-            //}
-            //mLastDiscoveredBulbs = bulbs;
-            //return bulbIds;
         }
 
         public List<Object> GetNewBulbs()
         {
+            // Get a list of all the newly discovered bulbs
             List<IBulb> bulbs = mDiscoveryService.GetDiscoveredBulbs();
             List<object> bulbIds = new List<object>();
             foreach (IBulb bulb in bulbs)
             {
                 bulbIds.Add(bulb);
             }
-            //mLastDiscoveredBulbs = bulbs;
+            
             return bulbIds;
         }
 
@@ -85,13 +80,13 @@ namespace ThingSharp.Drivers
         // Bulb Status - Get/Set
         //--------------------------------------------------------------------
 
-        public UInt32 GetBulbPower(Object bulb)
+        public uint? GetBulbPower(Object bulb)
         {
             IBulb b = (IBulb)bulb;
-            bool status = mBulbService.LightGetPower(b);
+            return mBulbService.LightGetPower(b);
 
-            UInt32 i = Convert.ToUInt32(status);
-            return i;
+            //UInt32 i = Convert.ToUInt32(status);
+            //return i;
         }
         public bool SetBulbPower(Object bulb, object state)
         {

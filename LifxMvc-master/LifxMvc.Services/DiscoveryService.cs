@@ -43,41 +43,18 @@ namespace LifxMvc.Services
 		{
 			Bulbs = new ConcurrentBag<IBulb>();
             NewBulbList = new ConcurrentBag<IBulb>();
-            //BulbInitializationTasks = new ConcurrentBag<Task>();
             var packet = new DeviceGetServicePacket();
 
             _udp = UdpHelperManager.Instance.DiscoveryUdpHelper;
-            //_udp.DeviceDiscovered += Udp_DeviceDiscovered;
 
-            //this.Wait = new ManualResetEventSlim(false);
-            //const int TIMEOUT = 2 * 1000;
             _udp.DiscoverBulbs(this, packet);
-            //var success = this.Wait.Wait(TIMEOUT);
-                                    
-            //_sw = Stopwatch.StartNew();
-            //var taskArr = BulbInitializationTasks.ToArray();
-			////////////////////////////////////////////////////////////////////////////////////CJKTask.WaitAll(taskArr);
-            //_sw.Stop();
-            //Debug.WriteLine("DiscoveryService: DiscoverAsync " + _sw.Elapsed);
-
-			//Debug.Assert(Bulbs.Count == expectedCount);
-            //var result = Bulbs.ToList();
-
-            //return result;
 		}
 
-		
-        //ConcurrentBag<Task> BulbInitializationTasks { get; set; }
-		public void Udp_DeviceDiscovered(object sender, DiscoveryEventArgs e)
-		{
-            //var ctx = e.DiscoveryContext;
-            //if (null == Bulbs.FirstOrDefault(x => x.IPEndPoint.ToString() == ctx.Sender.ToString()))
-            //{
-                var action = new Action(() => Udp_DeviceDiscoveredAsync(sender, e));
-                var task = Task.Factory.StartNew(action);
-                //BulbInitializationTasks.Add(task);
-            //}
-		}
+        public void Udp_DeviceDiscovered(object sender, DiscoveryEventArgs e)
+        {
+            var action = new Action(() => Udp_DeviceDiscoveredAsync(sender, e));
+            var task = Task.Factory.StartNew(action);
+        }
 
         private void Udp_DeviceDiscoveredAsync(object sender, DiscoveryEventArgs e)
         {
@@ -92,28 +69,29 @@ namespace LifxMvc.Services
                 LastSeen = DateTime.UtcNow
             };
 
-            //Bulbs.Add(bulb);
+            bulb.isOffline = false;
+
             var bulbSvc = new BulbService();
-            bulbSvc.Initialize(bulb);
+            bool gotLightData = bulbSvc.Initialize(bulb);
 
-            //int retries = 0;
-            //while (string.IsNullOrEmpty(bulb.Label) && retries++ < 5)
-            //{
-            //    bulbSvc.Initialize(bulb);
-            //}
 
-            Bulbs.Add(bulb);
-            NewBulbList.Add(bulb); // gets reset when ThingServer requests new found bulbs
+            // If we had an issue getting a response from teh bulb, then don't add it to the list so
+            // we can try to re-discover it again.
+            if (gotLightData)
+            {
+                Bulbs.Add(bulb);
+                NewBulbList.Add(bulb); // list gets emptied when ThingServer requests new found bulbs
+            }
+            else
+            {
+                // Since the light data was not properly read, we need to remove the IP from the 
+                // Discovered bulb list so we can try discovering it again and hopefully read the 
+                // light data
+                _udp.RemoveFromDiscoveredBulbList(bulb.IPEndPoint.ToString());
+                Debug.Write("-- Trouble getting response from bulb");
+            }
 
             Debug.WriteLine(Bulbs.Count);
-            //if (Bulbs.Count == ctx.ExpectedCount)
-            //{
-            //    var udp = sender as DiscoveryUdpHelper;
-            //    udp.DeviceDiscovered -= Udp_DeviceDiscovered;
-            //    ctx.CancelDiscovery = true;
-            //    //this.Wait.Set();
-            //}
-            //}
         }
 
 

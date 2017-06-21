@@ -67,17 +67,17 @@ namespace LifxMvc.Services
 			throw new NotImplementedException();
 		}
 
-		public void Initialize(IBulb bulb)
+		public bool Initialize(IBulb bulb)
 		{
 			throw new NotImplementedException();
 		}
 
-        public void LightGet(IBulb bulb, bool forceUpdate = false)
+        public bool LightGet(IBulb bulb, bool forceUpdate = false)
 		{
 			throw new NotImplementedException();
 		}
 
-		public bool LightGetPower(IBulb bulb)
+        public uint? LightGetPower(IBulb bulb)
 		{
 			throw new NotImplementedException();
 		}

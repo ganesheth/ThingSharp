@@ -15,7 +15,7 @@ namespace LifxMvc.Services.UdpHelper
 	public class BulbUdpHelper : IDisposable
 	{
 		const int MAX_TX_PER_SECOND = 1000 / 10;
-		const int MAX_RETRIES = 5;
+		const int MAX_RETRIES = 2;
 
 		bool IsAvailable
 		{
@@ -72,7 +72,7 @@ namespace LifxMvc.Services.UdpHelper
 		}
 
         ConcurrentBag<Task> BulbRequestDataTask { get; set; }
-		public R Send<R>(LifxPacketBase<R> packet, int retries = 0)
+		public R Send<R>(LifxPacketBase<R> packet, int retry_count = 0, int timeout = 500)
 			where R : LifxResponseBase
 		{
             
@@ -83,7 +83,7 @@ namespace LifxMvc.Services.UdpHelper
 
             BulbRequestDataTask = new ConcurrentBag<Task>();
             LifxResponseBase response = null;
-            var action = new Action(() => response = GetResponse(packet.Header.Source));
+            var action = new Action(() => response = GetResponse(packet.Header.Source, timeout));
             var task = Task.Factory.StartNew(action);
             BulbRequestDataTask.Add(task);
 
@@ -100,15 +100,13 @@ namespace LifxMvc.Services.UdpHelper
 			}
 			else 
 			{
-				if (MAX_RETRIES > retries)
+                if (MAX_RETRIES > retry_count)
 				{//Recursing we will go, recursing we will go, hi, ho, the merry-oh, ....
 					packet.Header.Source += 100;
-					result = this.Send(packet, ++retries);
+                    result = this.Send(packet, ++retry_count, (timeout * 2));
 				}
 			}
 
-            //if (null == result)
-            //    new object();
 			return result;
 		}
 
@@ -146,9 +144,9 @@ namespace LifxMvc.Services.UdpHelper
 			}
 		}        
 
-		LifxResponseBase GetResponse(uint frameSource)
+		LifxResponseBase GetResponse(uint frameSource, int timeout)
 		{
-            const int TIMEOUT = 200; //cjk
+            //const int TIMEOUT = 1500; //cjk
             byte[] data = null;
 			LifxResponseBase result = null;
 
@@ -160,7 +158,7 @@ namespace LifxMvc.Services.UdpHelper
                 result = null;
                 var asyncResult = this.UdpClient.BeginReceive(null, null);
 
-                var signaled = asyncResult.AsyncWaitHandle.WaitOne(TIMEOUT);
+                var signaled = asyncResult.AsyncWaitHandle.WaitOne(timeout);
                 if (signaled)
                 {
                     if (asyncResult.IsCompleted)
@@ -184,45 +182,45 @@ namespace LifxMvc.Services.UdpHelper
 			return result;
 		}
 
-        LifxResponseBase GetResponse2(uint frameSource)
-        {
-            //const int TIMEOUT = 5; //cjk
-            //byte[] data = null;
-            LifxResponseBase result = null;
+        ////LifxResponseBase GetResponse2(uint frameSource)
+        ////{
+        ////    //const int TIMEOUT = 5; //cjk
+        ////    //byte[] data = null;
+        ////    LifxResponseBase result = null;
 
-            uint responseSource = 0;
-            byte responseSequence = 0;
+        ////    uint responseSource = 0;
+        ////    byte responseSequence = 0;
 
-            while (responseSource < frameSource)//Compare sources in order to match the packet to the response.
-            {
-                IPEndPoint sender = new IPEndPoint(IPAddress.Any, 0);
-                byte[] receivedData = UdpClient.Receive(ref sender);
-                TraceData(receivedData);
+        ////    while (responseSource < frameSource)//Compare sources in order to match the packet to the response.
+        ////    {
+        ////        IPEndPoint sender = new IPEndPoint(IPAddress.Any, 0);
+        ////        byte[] receivedData = UdpClient.Receive(ref sender);
+        ////        TraceData(receivedData);
 
-                result = ResponseFactory.Parse(receivedData, sender);
-                responseSource = result.Source;
-                responseSequence = result.Sequence;
-                result.TraceReceived(this.UdpClient.Client.LocalEndPoint);
-            }
-            return result;
-        }
+        ////        result = ResponseFactory.Parse(receivedData, sender);
+        ////        responseSource = result.Source;
+        ////        responseSequence = result.Sequence;
+        ////        result.TraceReceived(this.UdpClient.Client.LocalEndPoint);
+        ////    }
+        ////    return result;
+        ////}
 
-		static void test(IAsyncResult asyncResult)
-		{
-			UdpClient client = (UdpClient)asyncResult.AsyncState;
-			try
-			{
-				IPEndPoint sender = new IPEndPoint(IPAddress.Any, 0);
-				byte[] result = null;
-				result = client.EndReceive(asyncResult, ref sender);
+        ////static void test(IAsyncResult asyncResult)
+        ////{
+        ////    UdpClient client = (UdpClient)asyncResult.AsyncState;
+        ////    try
+        ////    {
+        ////        IPEndPoint sender = new IPEndPoint(IPAddress.Any, 0);
+        ////        byte[] result = null;
+        ////        result = client.EndReceive(asyncResult, ref sender);
 
-				TraceData(result);
-			}
-			catch (SocketException)
-			{
-				throw;
-			}
-		}
+        ////        TraceData(result);
+        ////    }
+        ////    catch (SocketException)
+        ////    {
+        ////        throw;
+        ////    }
+        ////}
 
 		static void TraceData(byte[] data)
 		{

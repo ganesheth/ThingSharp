@@ -92,21 +92,28 @@ namespace ThingSharp.Bindings
                         try
                         {
                             r = client.Read(request.Url);
-                            if (!(r is Thing || r is List<HypermediaLink>))
+                            if (r == null)
                             {
-                                ValueObject valObj = new ValueObject() { value = r };
-                                r = JsonConvert.SerializeObject(valObj);
+                                response.StatusCode = (int)HttpStatusCode.NotFound;
                             }
-                            else if(r is Thing)
+                            else
                             {
-                                r = JsonConvert.SerializeObject(r);
+                                if (!(r is Thing || r is List<HypermediaLink>))
+                                {
+                                    ValueObject valObj = new ValueObject() { value = r };
+                                    r = JsonConvert.SerializeObject(valObj);
+                                }
+                                else if (r is Thing)
+                                {
+                                    r = JsonConvert.SerializeObject(r);
+                                }
+                                else if (r is List<HypermediaLink>)
+                                {
+                                    HypermediaLinks links = new HypermediaLinks() { links = r };
+                                    r = JsonConvert.SerializeObject(links);
+                                }
+                                response.StatusCode = (int)HttpStatusCode.OK;
                             }
-                            else if(r is List<HypermediaLink>)
-                            {
-                                HypermediaLinks links = new HypermediaLinks() { links = r };
-                                r = JsonConvert.SerializeObject(links);
-                            }
-                            response.StatusCode = (int)HttpStatusCode.OK;
                         }
                         catch (Exception e)
                         {
@@ -127,7 +134,7 @@ namespace ThingSharp.Bindings
                             String content = reader.ReadToEnd();
                             ValueObject valObj = JsonConvert.DeserializeObject<ValueObject>(content);
                             r = client.Write(request.Url, valObj.value);
-                            //response.StatusCode = (int)HttpStatusCode.Accepted;
+                            response.StatusCode = (int)HttpStatusCode.Accepted;
                         }
                         catch (Exception e)
                         {

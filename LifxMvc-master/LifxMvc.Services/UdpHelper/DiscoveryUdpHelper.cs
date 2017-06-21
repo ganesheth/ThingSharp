@@ -29,27 +29,26 @@ namespace LifxMvc.Services.UdpHelper
 
 		private const int PORT_NO = 56700;
 
-        private ConcurrentBag<string> foundBulbList = new ConcurrentBag<string>();
+        private ConcurrentDictionary<string, int> discoveredBulbList = new ConcurrentDictionary<string, int>();
 
         DiscoveryService DiscoverySvc = null;
 
 		Task ListeningTask { get; set; }
-        //ManualResetEventSlim StopListeningEvent { get; set; }
-        //ManualResetEventSlim StopDiscoveryEvent { get; set; }
-        //ManualResetEventSlim IsSafeToSendEvent { get; set; }
 
-        //public event EventHandler<DiscoveryEventArgs> DeviceDiscovered;
 		ConcurrentDictionary<string, int> DiscoveryResponses { get; set; }
 		DebugLogger Logger { get; set; }
 
 		public DiscoveryUdpHelper()
 		{
 			this.DiscoveryResponses = new ConcurrentDictionary<string, int>();
-            //this.StopListeningEvent = new ManualResetEventSlim(false);
-            //this.StopDiscoveryEvent = new ManualResetEventSlim(false);
-            //this.IsSafeToSendEvent = new ManualResetEventSlim(true);
 			this.Logger = new DebugLogger();
 		}
+
+        public void RemoveFromDiscoveredBulbList(string endPoint)
+        {
+            int value;
+            discoveredBulbList.TryRemove(endPoint, out value);
+        }
 
 		public void DiscoverBulbs(DiscoveryService ds, LifxPacketBase packet)
 		{
@@ -58,26 +57,9 @@ namespace LifxMvc.Services.UdpHelper
 			Logger.EnterMethod(MethodInfo.GetCurrentMethod(), "{0}", DateTime.Now.ToString("HH:mm:ss.ffff"));
 			try
 			{
-				//var ctx = new ListenContext(timeout);
-
-                this.DiscoverBulbsImpl(packet);
-
-                //var timeoutEvent = new ManualResetEventSlim(false);
-
-                //const int TIMEOUT_NDX = 0;
-                //const int SUCCESS_NDX = 1;
-                //var waitHandles = new WaitHandle[2];
-                //waitHandles[TIMEOUT_NDX] = timeoutEvent.WaitHandle;
-                //waitHandles[SUCCESS_NDX] = this.StopDiscoveryEvent.WaitHandle;
-
-                //var which = int.MaxValue;
-                //try
-                //{
-                //    which = WaitHandle.WaitAny(waitHandles, timeout);
-                //    this.StopListening();
-                //}
-                //catch (ThreadAbortException)
-                //{ }
+                //this.DiscoverBulbsImpl(packet);
+                StartListening();
+                StartSending(packet);
 			}
 			catch (Exception ex)
 			{
@@ -91,20 +73,9 @@ namespace LifxMvc.Services.UdpHelper
 		{
 			Logger.EnterMethod(MethodInfo.GetCurrentMethod(), "{0}", DateTime.Now.ToString("HH:mm:ss.ffff"));
 
-            StartListening();  
-            
+            StartListening();              
 
-            //Send(packet, ctx);
             StartSending(packet);
-			
-
-            //const int RETRY_INTERVAL = 10000;
-            //var wait = new ManualResetEventSlim(false);
-            //wait.Wait(RETRY_INTERVAL);
-            //this.StopListening();
-
-            //if (this.DiscoveryResponses.Count < ctx.ExpectedCount)
-            //  DiscoverBulbsImpl(packet, ctx);
 
 			Logger.ExitMethod(MethodInfo.GetCurrentMethod(), "{0}", DateTime.Now.ToString("HH:mm:ss.ffff"));
 		}
@@ -124,32 +95,21 @@ namespace LifxMvc.Services.UdpHelper
             // Initially, send out a discovery request every 5 seconds until devices are found.
             // Once devices are found, send out a discovery request at a much slow rate to reduce network traffic.
             int waitTime = 5000;
-            
 
             Logger.EnterMethod(MethodInfo.GetCurrentMethod(), "{0}", DateTime.Now.ToString("HH:mm:ss.ffff"));
-			//CJKthis.StopListening();
             var data = packet.Serialize();
-
 			
 			TraceData(data);
 			IPAddress broadcastIP = IPAddress.Broadcast;
 			IPEndPoint destEP = new IPEndPoint(broadcastIP, PORT_NO);
 			packet.IPEndPoint = destEP;
-            //if (!IsSafeToSendEvent.IsSet)
-            //    IsSafeToSendEvent.Wait();
             while (true)
             {
-                //if (foundBulbList.Count > 1)
-                //{
-                //    waitTime = 60000;
-                //}
-
                 using (UdpClient sender = new UdpClient(new IPEndPoint(LocalEndpointIpAddress, PORT_NO)))// new UdpClient(PORT_NO, AddressFamily.InterNetwork))
                 {
                     sender.DontFragment = true;
                     sender.EnableBroadcast = true;
 
-                    //Logger.EnterMethod(MethodInfo.GetCurrentMethod(), "{0}{1}", DateTime.Now.ToString("HH:mm:ss.ffff"), " --- Send Packet Now");
                     Debug.WriteLine("{0}{1}", DateTime.Now.ToString("HH:mm:ss.ffff"), " --- Send Service Discovery Packet");
                     sender.Send(data, data.Length, destEP);
                     packet.TraceSent(sender.Client.LocalEndPoint);
@@ -164,89 +124,30 @@ namespace LifxMvc.Services.UdpHelper
 		void StartListening()
 		{
 			Logger.EnterMethod(MethodInfo.GetCurrentMethod(), "{0}", DateTime.Now.ToString("HH:mm:ss.ffff"));
-			//this.StopListeningEvent.Reset();
 
             var listenProc = new Thread(this.Listen);
             listenProc.Start();
-            //UDPListener();
 
             // Give the Listener a little time to get setup before moving on.
             System.Threading.Thread.Sleep(500);
 
 			Logger.ExitMethod(MethodInfo.GetCurrentMethod(), "{0}", DateTime.Now.ToString("HH:mm:ss.ffff"));
 		}
-
-        //private void UDPListener()
-        //{
-        //    Task.Run(() =>
-        //    {
-        //        using (UdpClient udpClient = new UdpClient(PORT_NO, AddressFamily.InterNetwork))
-        //        {
-        //            //udpClient.EnableBroadcast = true;
-        //            //string loggingEvent = "";
-                    
-        //            while (true)
-        //            {
-        //                //IPEndPoint object will allow us to read datagrams sent from any source.
-        //                IPEndPoint sender = new IPEndPoint(IPAddress.Any, 0);
-
-        //                byte[] receivedResults = udpClient.Receive(ref sender);
-        //                //byte[] data = receivedResults;
-        //                var response = ResponseFactory.Parse(receivedResults, sender);
-        //                //response.TraceReceived(listener.Client.LocalEndPoint);
-
-        //                if (response is DeviceStateServiceResponse && ((LifxNet.DeviceStateServiceResponse)(response)).Service == 1)
-        //                {
-        //                    var ctx = new DiscoveryContext(sender, response as DeviceStateServiceResponse);
-
-        //                    // If we've already discovered the bulb, then skip it.
-        //                    string ip = ctx.Sender.ToString();
-        //                    if (foundBulbList.FirstOrDefault(x => x == ip) == null)
-        //                    {
-        //                        foundBulbList.Add(ip);
-        //                        OnBulbDiscovered(ctx);
-        //                    }
-        //                }
-        //            }
-        //        }
-        //    });
-        //}
-
-        //internal void StopListening()
-        //{
-        //    Logger.EnterMethod(MethodInfo.GetCurrentMethod(), "{0}", DateTime.Now.ToString("HH:mm:ss.ffff"));
-        //    this.StopListeningEvent.Set();
-        //    Logger.ExitMethod(MethodInfo.GetCurrentMethod(), "{0}", DateTime.Now.ToString("HH:mm:ss.ffff"));
-        //}
-
+        
         void Listen()
         {
             Logger.EnterMethod(MethodInfo.GetCurrentMethod(), "{0}", DateTime.Now.ToString("HH:mm:ss.ffff"));
-            //var listenCtx = ob as ListenContext;
             int timeout = 10000;// listenCtx.Timeout;
-            //int expectedCount = listenCtx.ExpectedCount;
 
             IPEndPoint sender = new IPEndPoint(IPAddress.Any, 0);
 
-            //IsSafeToSendEvent.Reset();
             using (UdpClient listener = new UdpClient(PORT_NO, AddressFamily.InterNetwork))
             {
                 try
                 {
-                    while (true)//!this.StopListeningEvent.IsSet)
+                    while (true)
                     {
-                        var asyncResult = listener.BeginReceive(null, null);
-                        //var waitHandles = new WaitHandle[] { asyncResult.AsyncWaitHandle, this.StopListeningEvent.WaitHandle };
-                        //var waitHandles = new WaitHandle[] { asyncResult.AsyncWaitHandle };
-                        //var which = int.MaxValue;
-                        //try
-                        //{
-                        //    which = WaitHandle.WaitAny(waitHandles, timeout);
-                        //}
-                        //catch (ThreadAbortException)
-                        //{ }
-                        //if (0 == which)
-                        //{
+                        var asyncResult = listener.BeginReceive(null, null);                        
                         var signaled = asyncResult.AsyncWaitHandle.WaitOne(timeout);
                         if (signaled)
                         {
@@ -262,12 +163,14 @@ namespace LifxMvc.Services.UdpHelper
                                     var ctx = new DiscoveryContext(sender, response as DeviceStateServiceResponse);
 
                                     // If we've already discovered the bulb, then skip it.
-                                    string ip = ctx.Sender.ToString();
-                                    if (foundBulbList.FirstOrDefault(x => x == ip) == null)
+                                    string endPoint = ctx.Sender.ToString();
+                                    int value;
+                                    if (!discoveredBulbList.TryGetValue(endPoint, out value))
                                     {
-                                        foundBulbList.Add(ip);
-                                        //newBulbList.Add(ip); // gets reset when ThingServer requests new found bulbs
-                                        OnBulbDiscovered(ctx);
+                                        if (discoveredBulbList.TryAdd(endPoint, discoveredBulbList.Count))
+                                        {
+                                            OnBulbDiscovered(ctx);
+                                        }
                                     }
                                 }
                                 else
