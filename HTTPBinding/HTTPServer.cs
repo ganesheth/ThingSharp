@@ -134,7 +134,10 @@ namespace ThingSharp.Bindings
                             String content = reader.ReadToEnd();
                             ValueObject valObj = JsonConvert.DeserializeObject<ValueObject>(content);
                             r = client.Write(request.Url, valObj.value);
-                            response.StatusCode = (int)HttpStatusCode.Accepted;
+                            if((bool)r == true)
+                                response.StatusCode = (int)HttpStatusCode.Accepted;
+                            else
+                                response.StatusCode = (int)HttpStatusCode.NotFound; // Error 404
                         }
                         catch (Exception e)
                         {

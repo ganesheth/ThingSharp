@@ -77,22 +77,18 @@ namespace ThingSharp.Drivers
         }
 
         //--------------------------------------------------------------------
-        // Bulb Status - Get/Set
+        // Bulb Power - Get/Set
         //--------------------------------------------------------------------
 
         public uint? GetBulbPower(Object bulb)
         {
             IBulb b = (IBulb)bulb;
             return mBulbService.LightGetPower(b);
-
-            //UInt32 i = Convert.ToUInt32(status);
-            //return i;
         }
         public bool SetBulbPower(Object bulb, object state)
         {
             IBulb b = (IBulb)bulb;
-            mBulbService.LightSetPower(b, (bool)state);
-            return true;
+            return mBulbService.LightSetPower(b, (bool)state);
         }
 
         //--------------------------------------------------------------------
@@ -108,8 +104,7 @@ namespace ThingSharp.Drivers
         {
             IBulb b = (IBulb)bulb;
             System.Drawing.Color color = ParseColor((string)value);
-            mBulbService.LightSetColor(b, color);
-            return true;
+            return mBulbService.LightSetColor(b, color);
         }
 
         System.Drawing.Color ParseColor(string color)
@@ -158,8 +153,7 @@ namespace ThingSharp.Drivers
             brightness = brightness < (ushort)0 ? (ushort)0 : brightness;
             brightness = (ushort)Math.Round(((float)brightness / 100.0) * 65535.0, 0);
 
-            mBulbService.LightSetBrightness(b, brightness);
-            return true;
+            return mBulbService.LightSetBrightness(b, brightness);
         }
 
         //--------------------------------------------------------------------
@@ -194,8 +188,7 @@ namespace ThingSharp.Drivers
             saturation = saturation < (ushort)0 ? (ushort)0 : saturation;
             saturation = (ushort)Math.Round(((float)saturation / 100.0) * 65535.0, 0);
 
-            mBulbService.LightSetSaturation(b, saturation);
-            return true;
+            return mBulbService.LightSetSaturation(b, saturation);
         }
 
         //--------------------------------------------------------------------
@@ -221,8 +214,7 @@ namespace ThingSharp.Drivers
             kelvin = kelvin > (ushort)6500 ? (ushort)6500 : kelvin;
             kelvin = kelvin < (ushort)2700 ? (ushort)2700 : kelvin;
 
-            mBulbService.LightSetKelvin(b, kelvin);
-            return true;
+            return mBulbService.LightSetKelvin(b, kelvin);
         }
     }
 

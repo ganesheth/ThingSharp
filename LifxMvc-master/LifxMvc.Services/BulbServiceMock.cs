@@ -82,12 +82,12 @@ namespace LifxMvc.Services
 			throw new NotImplementedException();
 		}
 
-		public void LightSetColor(IBulb bulb, IHSBK hsbk)
+        public bool LightSetColor(IBulb bulb, IHSBK hsbk)
 		{
 			throw new NotImplementedException();
 		}
 
-		public void LightSetPower(IBulb bulb, bool power)
+        public bool LightSetPower(IBulb bulb, bool power)
 		{
 			throw new NotImplementedException();
 		}
@@ -102,8 +102,9 @@ namespace LifxMvc.Services
 			throw new NotImplementedException();
 		}
 
-		public void LightSetColor(IBulb bulb, Color color)
+        public bool LightSetColor(IBulb bulb, Color color)
 		{
+            return true;
 		}
 
 	}

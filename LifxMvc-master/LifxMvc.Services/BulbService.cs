@@ -63,17 +63,22 @@ namespace LifxMvc.Services
         }
         //--------------------------------------------------------------------
 
-		void SendAsync(IBulb bulb, LifxPacketBase packet) 
+		bool SendAsync(IBulb bulb, LifxPacketBase packet) 
 		{
+            bool success = false;
+
             if (!bulb.isOffline)
             {
                 var udp = UdpHelperManager.Instance[packet.IPEndPoint];
                 udp.SendAsync(packet);
+                success = true;
             }
             else
             {
-                // return unsuccesfull message
+                //return false;
             }
+
+            return success;
 		}
         //--------------------------------------------------------------------
 
@@ -240,15 +245,21 @@ namespace LifxMvc.Services
         }
         //--------------------------------------------------------------------
 
-		public void LightSetPower(IBulb bulb, bool power)
+		public bool LightSetPower(IBulb bulb, bool power)
 		{
-            // If light is offline, then return an un-successful message
-            if(bulb.isOffline)
-                return;  //cjk
+			bool isSuccess = false;
 
-			var packet = new LightSetPowerPacket(bulb, power);
-			this.SendAsync(bulb, packet);
-			bulb.IsOn = power;
+            var packet = new LightSetPowerPacket(bulb, power);
+			var response = this.Send(bulb, packet);
+
+
+            if (response != null)
+            {
+                isSuccess = true;
+                bulb.IsOn = power;
+            }
+
+            return isSuccess;
 		}
         //--------------------------------------------------------------------
 
@@ -259,11 +270,21 @@ namespace LifxMvc.Services
 		}
         //--------------------------------------------------------------------
 
-        void LightSetHSBK(IBulb bulb)
+        bool LightSetHSBK(IBulb bulb)
 		{
+            bool isSuccess = false;
+
             var packet = new LightSetHSBKPacket(bulb);
 			packet.Duration = 100;
-			this.SendAsync(bulb, packet);
+
+            var response = this.Send(bulb, packet);
+
+            if (response != null)
+            {
+                isSuccess = true;
+            }
+
+            return isSuccess;
 		}
         //--------------------------------------------------------------------
 
@@ -278,12 +299,8 @@ namespace LifxMvc.Services
         }
         //--------------------------------------------------------------------
 
-		public void LightSetColor(IBulb bulb, Color color)
+		public bool LightSetColor(IBulb bulb, Color color)
 		{
-            // If light is offline, then return an un-successful message
-            if (bulb.isOffline)
-                return;  //cjk
-
             // Get the latest Bulb HSBK settings (could have change from another source)
             this.LightGet(bulb, true);
 
@@ -298,7 +315,7 @@ namespace LifxMvc.Services
             bulb.Brightness = hsbk.Brightness;
 
             // Create the Packet and send request
-            LightSetHSBK(bulb);
+            return LightSetHSBK(bulb);
 		}
         //--------------------------------------------------------------------
 
@@ -310,12 +327,8 @@ namespace LifxMvc.Services
         }
         //--------------------------------------------------------------------
 
-        public void LightSetBrightness(IBulb bulb, ushort brightness)
+        public bool LightSetBrightness(IBulb bulb, ushort brightness)
         {
-            // If light is offline, then return an un-successful message
-            if (bulb.isOffline)
-                return;  //cjk
-
             // Get the latest Bulb color settings (could have change from another source)
             this.LightGet(bulb, true);
 
@@ -323,7 +336,7 @@ namespace LifxMvc.Services
             bulb.Brightness = brightness;
 
             // Create the Packet and send request
-            LightSetHSBK(bulb);
+            return LightSetHSBK(bulb);
         }
         //--------------------------------------------------------------------
 
@@ -335,12 +348,8 @@ namespace LifxMvc.Services
         }
         //--------------------------------------------------------------------
 
-        public void LightSetSaturation(IBulb bulb, ushort saturation)
+        public bool LightSetSaturation(IBulb bulb, ushort saturation)
         {
-            // If light is offline, then return an un-successful message
-            if (bulb.isOffline)
-                return;  //cjk
-
             // Get the latest Bulb color settings (could have change from another source)
             this.LightGet(bulb, true);
 
@@ -348,7 +357,7 @@ namespace LifxMvc.Services
             bulb.Saturation = saturation;
 
             // Create the Packet and send request
-            LightSetHSBK(bulb);
+            return LightSetHSBK(bulb);
         }
         //--------------------------------------------------------------------
 
@@ -360,12 +369,8 @@ namespace LifxMvc.Services
         }
         //--------------------------------------------------------------------
 
-        public void LightSetKelvin(IBulb bulb, ushort kelvin)
+        public bool LightSetKelvin(IBulb bulb, ushort kelvin)
         {
-            // If light is offline, then return an un-successful message
-            if (bulb.isOffline)
-                return;  //cjk
-
             // Get the latest Bulb color settings (could have change from another source)
             this.LightGet(bulb, true);
 
@@ -373,7 +378,7 @@ namespace LifxMvc.Services
             bulb.Kelvin = kelvin;
 
             // Create the Packet and send request
-            LightSetHSBK(bulb);
+            return LightSetHSBK(bulb);
         }
         //--------------------------------------------------------------------
 

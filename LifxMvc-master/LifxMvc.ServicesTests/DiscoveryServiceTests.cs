@@ -91,9 +91,9 @@ namespace LifxMvc.Services.Tests
 			}
 		}
 
-		void LightSetPower(IBulb bulb, bool power)
+        bool LightSetPower(IBulb bulb, bool power)
 		{
-			BulbService.LightSetPower(bulb, power);
+			return BulbService.LightSetPower(bulb, power);
 		}
 
         uint? LightGetPower(IBulb bulb)

@@ -17,7 +17,7 @@ namespace LifxNet
 			: base(bulb)
 		{
 			this.IsOn = isOn;
-			this.Header.AcknowledgeRequired = true;
+			this.Header.AcknowledgeRequired = true;            
 		}
 
 		public LightSetPowerPacket(FrameHeader header, byte[] payload)
