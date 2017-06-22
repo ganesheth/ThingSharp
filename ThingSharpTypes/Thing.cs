@@ -57,7 +57,7 @@ namespace ThingSharp.Types
         [JsonProperty(PropertyName = "id", Order = 6)]
         public String Id { get; set; }
 
-        [JsonProperty(PropertyName = "cc:om_name", NullValueHandling = NullValueHandling.Ignore, Order = 7)]
+        [JsonProperty(PropertyName = "om_name", NullValueHandling = NullValueHandling.Ignore, Order = 7)]
         public String CC_OMName { get; set; }
 
         [JsonProperty(PropertyName ="properties", Order = 8)]

@@ -75,7 +75,7 @@ namespace LifxMvc.Services
             bool gotLightData = bulbSvc.Initialize(bulb);
 
 
-            // If we had an issue getting a response from teh bulb, then don't add it to the list so
+            // If we had an issue getting a response from the bulb, then don't add it to the list so
             // we can try to re-discover it again.
             if (gotLightData)
             {

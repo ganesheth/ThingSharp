@@ -13,7 +13,6 @@ namespace ThingSharp.Drivers
 {
     public class LifxDriver
     {
-        //private List<IBulb> mLastDiscoveredBulbs = new List<IBulb>();
         private DiscoveryService mDiscoveryService;
         private BulbService mBulbService;
 

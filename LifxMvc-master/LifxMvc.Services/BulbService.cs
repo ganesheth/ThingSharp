@@ -9,22 +9,16 @@ namespace LifxMvc.Services
 {
 	public class BulbService : IBulbService
 	{
+        const int BULB_OFFLINE_RETRY_TIME = 15000;
+        const int BULB_LAST_READ_RETRY_TIME = 15000;
+
 		R Send<R>(IBulb bulb, LifxPacketBase<R> packet) where R : LifxResponseBase
 		{
-            var response = (R)null;
-            bool okToSendRequestToBulb = true;
+            var response = (R)null;            
 
-            // If the bulb is offline, then wait 15 seconds before checking if it's back online.
-            if (bulb.isOffline)
-            {
-                double deltaTime = DateTime.UtcNow.Subtract(bulb.LastOfflineCheck).TotalMilliseconds;                
-                if (deltaTime > 0 && deltaTime < 15000)
-                {
-                    okToSendRequestToBulb = false;
-                }
-            }
-
-            if (okToSendRequestToBulb)
+            // If the bulb is Offline and we haven't waited 15 seconds yet, then skip any communication
+            // with the bulb and send back a NULL response
+            if (BulbOfflineCheck(bulb))
             {
                 var udp = UdpHelperManager.Instance[packet.IPEndPoint];
                 response = udp.Send(packet);
@@ -45,16 +39,34 @@ namespace LifxMvc.Services
 		}
         //--------------------------------------------------------------------
 
+        private bool BulbOfflineCheck(IBulb bulb)
+        {
+            bool okToSendRequestToBulb = true;
+
+            // If the bulb is offline, then wait 15 seconds before checking if it's back online.
+            if (bulb.isOffline)
+            {
+                double deltaTime = DateTime.UtcNow.Subtract(bulb.LastOfflineCheck).TotalMilliseconds;
+                if (deltaTime > 0 && deltaTime < BULB_OFFLINE_RETRY_TIME)
+                {
+                    okToSendRequestToBulb = false;
+                }
+            }
+
+            return okToSendRequestToBulb;
+        }
+        //--------------------------------------------------------------------
+
         private bool IsOkToReadFromBulb(DateTime lastReadTime)
         {
             bool okToRead = false;
 
             double deltaTime = DateTime.UtcNow.Subtract(lastReadTime).TotalMilliseconds;
 
-            // If the time difference since the last time we read data from th light is negative, or
-            // greater than 15 seconds (15000 milliseconds), then get the data from the light again.
+            // If the time difference since the last time we read data from the light is negative, or
+            // greater than BULB_LAST_READ_RETRY_TIME, then get the data from the light again.
             // Else, just use the old data
-            if (deltaTime < 0 || deltaTime > 15000)
+            if (deltaTime < 0 || deltaTime > BULB_LAST_READ_RETRY_TIME)
             {
                 okToRead = true;
             }
@@ -97,9 +109,6 @@ namespace LifxMvc.Services
 		{
             bool gotResponse = false;
 
-            // If the time difference since the last time we read the light state properties is negative, or
-            // greater than 15 seconds (15000 milliseconds), then get the data from the light again.
-            // Else, just use the old data
             if (IsOkToReadFromBulb(bulb.LastStateRequest) || forceUpdate)
             {
                 // update the Last  Request time first so other threads that coming in 

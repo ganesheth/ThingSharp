@@ -74,104 +74,119 @@ namespace ThingSharp.Bindings
                 // Note: The GetContext method blocks while waiting for a request. 
                 HttpListenerContext context = listener.GetContext();
 
-                // Start timing the amount of time it takes for each request
-                sw = Stopwatch.StartNew();
+                // Send the request off to the processing thread
+                HandleRequest(context);                
+            }
 
-                HttpListenerRequest request = context.Request;
-                // Obtain a response object.
-                HttpListenerResponse response = context.Response;
-                // Construct a response.
-                string responseString = "<HTML><BODY> Hello world!</BODY></HTML>";
-                byte[] buffer = System.Text.Encoding.UTF8.GetBytes(responseString);
+        }
 
-                Object r;
-                if (client != null)
+        private void HandleRequest(HttpListenerContext context)
+        {
+            var action = new Action(() => HandleRequestAsync(context));
+            var task = Task.Factory.StartNew(action);
+        }
+
+        private void HandleRequestAsync(HttpListenerContext context)
+        {
+            Stopwatch sw;
+
+            // Start timing the amount of time it takes for each request
+            sw = Stopwatch.StartNew();
+
+            HttpListenerRequest request = context.Request;
+            // Obtain a response object.
+            HttpListenerResponse response = context.Response;
+            // Construct a response.
+            string responseString = "<HTML><BODY> Hello world!</BODY></HTML>";
+            byte[] buffer = System.Text.Encoding.UTF8.GetBytes(responseString);
+
+            Object r;
+            if (client != null)
+            {
+                if (request.HttpMethod == "GET")
                 {
-                    if (request.HttpMethod == "GET")
+                    try
                     {
-                        try
+                        r = client.Read(request.Url);
+                        if (r == null)
                         {
-                            r = client.Read(request.Url);
-                            if (r == null)
-                            {
-                                response.StatusCode = (int)HttpStatusCode.NotFound;
-                            }
-                            else
-                            {
-                                if (!(r is Thing || r is List<HypermediaLink>))
-                                {
-                                    ValueObject valObj = new ValueObject() { value = r };
-                                    r = JsonConvert.SerializeObject(valObj);
-                                }
-                                else if (r is Thing)
-                                {
-                                    r = JsonConvert.SerializeObject(r);
-                                }
-                                else if (r is List<HypermediaLink>)
-                                {
-                                    HypermediaLinks links = new HypermediaLinks() { links = r };
-                                    r = JsonConvert.SerializeObject(links);
-                                }
-                                response.StatusCode = (int)HttpStatusCode.OK;
-                            }
+                            response.StatusCode = (int)HttpStatusCode.NotFound;
                         }
-                        catch (Exception e)
+                        else
                         {
-                            response.StatusCode = (int)GetStatusCodeForException(e); ;
-                            r = e.Message;
-                        }
-                        if (r != null)
-                        {
-                            buffer = System.Text.Encoding.UTF8.GetBytes(r.ToString());
+                            if (!(r is Thing || r is List<HypermediaLink>))
+                            {
+                                ValueObject valObj = new ValueObject() { value = r };
+                                r = JsonConvert.SerializeObject(valObj);
+                            }
+                            else if (r is Thing)
+                            {
+                                r = JsonConvert.SerializeObject(r);
+                            }
+                            else if (r is List<HypermediaLink>)
+                            {
+                                HypermediaLinks links = new HypermediaLinks() { links = r };
+                                r = JsonConvert.SerializeObject(links);
+                            }
+                            response.StatusCode = (int)HttpStatusCode.OK;
                         }
                     }
-                    else if (request.HttpMethod == "PUT")
+                    catch (Exception e)
                     {
-                        UpdateResponse ur = new UpdateResponse() { error = null };
-                        try
-                        {
-                            TextReader reader = new StreamReader(request.InputStream);
-                            String content = reader.ReadToEnd();
-                            ValueObject valObj = JsonConvert.DeserializeObject<ValueObject>(content);
-                            r = client.Write(request.Url, valObj.value);
-                            if((bool)r == true)
-                                response.StatusCode = (int)HttpStatusCode.Accepted;
-                            else
-                                response.StatusCode = (int)HttpStatusCode.NotFound; // Error 404
-                        }
-                        catch (Exception e)
-                        {
-                            r = e.Message;
-                            ur.error = e;
-                            response.StatusCode = (int)GetStatusCodeForException(e);
-                        }
-                        String urs = JsonConvert.SerializeObject(ur);
-                        buffer = System.Text.Encoding.UTF8.GetBytes(urs);
+                        response.StatusCode = (int)GetStatusCodeForException(e); ;
+                        r = e.Message;
+                    }
+                    if (r != null)
+                    {
+                        buffer = System.Text.Encoding.UTF8.GetBytes(r.ToString());
                     }
                 }
-                // Get a response stream and write the response to it.
-                response.ContentLength64 = buffer.Length;
-                response.ContentType = "application/json";
-                System.IO.Stream output = response.OutputStream;
-                try
+                else if (request.HttpMethod == "PUT")
                 {
-                    if (output != null)
+                    UpdateResponse ur = new UpdateResponse() { error = null };
+                    try
                     {
-                        output.Write(buffer, 0, buffer.Length);
-                        // You must close the output stream.
-                        output.Close();
+                        TextReader reader = new StreamReader(request.InputStream);
+                        String content = reader.ReadToEnd();
+                        ValueObject valObj = JsonConvert.DeserializeObject<ValueObject>(content);
+                        r = client.Write(request.Url, valObj.value);
+                        if ((bool)r == true)
+                            response.StatusCode = (int)HttpStatusCode.Accepted;
+                        else
+                            response.StatusCode = (int)HttpStatusCode.NotFound; // Error 404
                     }
+                    catch (Exception e)
+                    {
+                        r = e.Message;
+                        ur.error = e;
+                        response.StatusCode = (int)GetStatusCodeForException(e);
+                    }
+                    String urs = JsonConvert.SerializeObject(ur);
+                    buffer = System.Text.Encoding.UTF8.GetBytes(urs);
                 }
-                catch (Exception e)
+            }
+            // Get a response stream and write the response to it.
+            response.ContentLength64 = buffer.Length;
+            response.ContentType = "application/json";
+            System.IO.Stream output = response.OutputStream;
+            try
+            {
+                if (output != null)
                 {
-                    // Usually get here during debugging if we take to long to responde.
-                    // Just clode the stream and move on.
+                    output.Write(buffer, 0, buffer.Length);
+                    // You must close the output stream.
                     output.Close();
                 }
-
-                sw.Stop();
-                //Console.WriteLine("RequestReceived -- Overall TimeElapsed: {0}", sw.Elapsed);
             }
+            catch (Exception e)
+            {
+                // Usually get here during debugging if we take to long to responde.
+                // Just clode the stream and move on.
+                output.Close();
+            }
+
+            sw.Stop();
+            //Console.WriteLine("RequestReceived -- Overall TimeElapsed: {0}", sw.Elapsed);
 
         }
 

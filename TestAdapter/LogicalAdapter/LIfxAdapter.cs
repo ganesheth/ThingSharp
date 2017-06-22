@@ -144,9 +144,9 @@ namespace ThingSharp.TestAdapter
                 default:
                     break;
             }
-    
+                
             sw.Stop();
-            Console.WriteLine("GET:{0}\t -- TimeElapsed: {1}   ({2})", property.Name, sw.Elapsed, count++);
+            Console.WriteLine("GET:{0}\t -- TimeElapsed: {1}   ({2})  {3}", property.Name, sw.Elapsed, count++, driver.GetBulbObjectLabel(property.Parent.SubsystemContext));
 
             return value;
         }
