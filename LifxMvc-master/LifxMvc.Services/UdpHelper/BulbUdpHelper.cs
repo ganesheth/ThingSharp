@@ -15,7 +15,7 @@ namespace LifxMvc.Services.UdpHelper
 	public class BulbUdpHelper : IDisposable
 	{
 		const int MAX_TX_PER_SECOND = 1000 / 10;
-		const int MAX_RETRIES = 2;
+		const int MAX_RETRIES = 3;
 
 		bool IsAvailable
 		{

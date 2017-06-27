@@ -25,7 +25,12 @@ namespace LifxMvc.Services
                 if (null != response)
                 {
                     bulb.isOffline = false;
-                    BulbExtensions.Set(bulb, (dynamic)response);
+
+                    // Don't update the bulb info if we sent a SET message because the response
+                    // has the previous settings. For example, if we change brightness from 25%
+                    // to 75%, the response will show brightness as 25%.
+                    if(!IsSetPacket(packet.MessageType))
+                        BulbExtensions.Set(bulb, (dynamic)response);
                 }
                 else
                 {
@@ -39,11 +44,24 @@ namespace LifxMvc.Services
 		}
         //--------------------------------------------------------------------
 
+        private bool IsSetPacket(PacketType pt)
+        {
+            bool isSetPacket = false;
+
+            if(pt == PacketType.LightSetColor || pt == PacketType.LightSetPower || pt == PacketType.LightSetWaveform)
+            {
+                isSetPacket = true;
+            }
+
+            return isSetPacket;
+        }
+        //--------------------------------------------------------------------
+
         private bool BulbOfflineCheck(IBulb bulb)
         {
             bool okToSendRequestToBulb = true;
 
-            // If the bulb is offline, then wait 15 seconds before checking if it's back online.
+            // If the bulb is offline, then wait BULB_OFFLINE_RETRY_TIME seconds before checking if it's back online.
             if (bulb.isOffline)
             {
                 double deltaTime = DateTime.UtcNow.Subtract(bulb.LastOfflineCheck).TotalMilliseconds;
@@ -111,7 +129,7 @@ namespace LifxMvc.Services
 
             if (IsOkToReadFromBulb(bulb.LastStateRequest) || forceUpdate)
             {
-                // update the Last  Request time first so other threads that coming in 
+                // update the Last Request time first so other threads that coming in 
                 // immediatly don't try reading as well
                 bulb.LastStateRequest = DateTime.UtcNow;
 
@@ -258,7 +276,7 @@ namespace LifxMvc.Services
 		{
 			bool isSuccess = false;
 
-            var packet = new LightSetPowerPacket(bulb, power);
+            var packet = new LightSetPowerPacket(bulb, power); 
 			var response = this.Send(bulb, packet);
 
 

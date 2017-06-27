@@ -9,12 +9,10 @@ using System.Net.Sockets;
 namespace ThingSharp.Utils
 {
     public class IpAddressHelper
-    {
-        //public static String IpAddress { get; set; }      
-  
+    {  
         public string GetLocalIPv4(NetworkInterfaceType type)
         {
-            string foundIP = "";
+            List<string> ipAddrList = new List<string>();
 
             foreach(NetworkInterface item in NetworkInterface.GetAllNetworkInterfaces())
             {
@@ -24,12 +22,12 @@ namespace ThingSharp.Utils
                     {
                         if(ip.Address.AddressFamily == AddressFamily.InterNetwork)
                         {
-                            foundIP = ip.Address.ToString();
+                            ipAddrList.Add(ip.Address.ToString());
                         }
                     }
                 }
             }
-            return foundIP;            
+            return ipAddrList.FirstOrDefault();            
         }
     }   
 }
