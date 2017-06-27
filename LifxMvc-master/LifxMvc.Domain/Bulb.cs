@@ -105,6 +105,12 @@ namespace LifxMvc.Domain
 		public uint Port { get; set; }
 		public DateTime LastSeen {get;set;}
 
+        public DateTime LastStateRequest { get; set; }
+        public DateTime LastPowerRequest { get; set; }
+
+        public bool isOffline { get; set; }
+        public DateTime LastOfflineCheck { get; set; }
+
 		public uint Vendor { get; set; }
 		public LifxProductEnum Product { get; set; }
 		public uint Version { get; set; }
@@ -159,6 +165,12 @@ namespace LifxMvc.Domain
 			Vendor = UInt32.MaxValue;
 			Product = LifxProductEnum.Unknown;
 			Version = UInt32.MaxValue;
+
+            LastStateRequest = DateTime.MaxValue;
+            LastPowerRequest = DateTime.MaxValue;
+
+            isOffline = false;
+            LastOfflineCheck = DateTime.MaxValue;
 
 		}
 

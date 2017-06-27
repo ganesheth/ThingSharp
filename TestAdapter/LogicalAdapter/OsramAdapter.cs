@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using ThingSharp.Osram;
 using ThingSharp.Types;
+using RestAdapter;
 
 namespace ThingSharp.TestAdapter
 {
@@ -19,7 +20,7 @@ namespace ThingSharp.TestAdapter
             int i = 1;
             foreach (object b in bulbs)
             {
-                GMS_OM_LED_LAMP osramLamp = new GMS_OM_LED_LAMP(new Uri(baseUri, String.Format("osram_{0}", i++)));
+                LIFX_WIFI_LIGHT osramLamp = new LIFX_WIFI_LIGHT(new Uri(baseUri, String.Format("osram_{0}", i++)));
                 osramLamp.SubsystemContext = b;
                 RaiseOnThingAdded(osramLamp);
             }

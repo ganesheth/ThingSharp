@@ -57,11 +57,11 @@ namespace LifxMvc.Services.Tests
 			var svc = new DiscoveryService();
 
 			var sw = Stopwatch.StartNew();
-			var result = svc.DiscoverAsync(EXPECTED_BULB_COUNT);
+			svc.DiscoverAsync();
 			sw.Stop();
 			Debug.Write(sw.Elapsed);
 
-			Bulbs = new List<IBulb>(result);
+            //Bulbs = new List<IBulb>(result);
 			Bulbs.Sort(new BulbComparer());
 
 			//var bulbService = new BulbService();
@@ -91,12 +91,12 @@ namespace LifxMvc.Services.Tests
 			}
 		}
 
-		void LightSetPower(IBulb bulb, bool power)
+        bool LightSetPower(IBulb bulb, bool power)
 		{
-			BulbService.LightSetPower(bulb, power);
+			return BulbService.LightSetPower(bulb, power);
 		}
 
-		bool LightGetPower(IBulb bulb)
+        uint? LightGetPower(IBulb bulb)
 		{
 			var result = BulbService.LightGetPower(bulb);
 			return result;

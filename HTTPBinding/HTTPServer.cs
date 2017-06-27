@@ -8,6 +8,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using ThingSharp.Types;
+using System.Diagnostics;
 
 namespace ThingSharp.Bindings
 {
@@ -45,6 +46,8 @@ namespace ThingSharp.Bindings
 
         public void Listen()
         {
+            Stopwatch sw;
+
             if (!HttpListener.IsSupported)
             {
                 Console.WriteLine("Windows XP SP2 or Server 2003 is required to use the HttpListener class.");
@@ -62,81 +65,128 @@ namespace ThingSharp.Bindings
             {
                 listener.Prefixes.Add(s);
             }
+            Console.WriteLine("Listening...");
             while (true)
-            {
-                Console.WriteLine("Listening...");
+            {                
                 listener.Start();
                 if (!listener.IsListening)
                     break;
                 // Note: The GetContext method blocks while waiting for a request. 
                 HttpListenerContext context = listener.GetContext();
-                HttpListenerRequest request = context.Request;
-                // Obtain a response object.
-                HttpListenerResponse response = context.Response;
-                // Construct a response.
-                string responseString = "<HTML><BODY> Hello world!</BODY></HTML>";
-                byte[] buffer = System.Text.Encoding.UTF8.GetBytes(responseString);
 
-                Object r;
-                if (client != null)
+                // Send the request off to the processing thread
+                HandleRequest(context);                
+            }
+
+        }
+
+        private void HandleRequest(HttpListenerContext context)
+        {
+            var action = new Action(() => HandleRequestAsync(context));
+            var task = Task.Factory.StartNew(action);
+        }
+
+        private void HandleRequestAsync(HttpListenerContext context)
+        {
+            Stopwatch sw;
+
+            // Start timing the amount of time it takes for each request
+            sw = Stopwatch.StartNew();
+
+            HttpListenerRequest request = context.Request;
+            // Obtain a response object.
+            HttpListenerResponse response = context.Response;
+            // Construct a response.
+            string responseString = "<HTML><BODY> Hello world!</BODY></HTML>";
+            byte[] buffer = System.Text.Encoding.UTF8.GetBytes(responseString);
+
+            Object r;
+            if (client != null)
+            {
+                if (request.HttpMethod == "GET")
                 {
-                    if (request.HttpMethod == "GET")
+                    try
                     {
-                        try
+                        r = client.Read(request.Url);
+                        if (r == null)
                         {
-                            r = client.Read(request.Url);
+                            response.StatusCode = (int)HttpStatusCode.NotFound;
+                        }
+                        else
+                        {
                             if (!(r is Thing || r is List<HypermediaLink>))
                             {
                                 ValueObject valObj = new ValueObject() { value = r };
                                 r = JsonConvert.SerializeObject(valObj);
                             }
-                            else if(r is Thing)
+                            else if (r is Thing)
                             {
                                 r = JsonConvert.SerializeObject(r);
                             }
-                            else if(r is List<HypermediaLink>)
+                            else if (r is List<HypermediaLink>)
                             {
                                 HypermediaLinks links = new HypermediaLinks() { links = r };
                                 r = JsonConvert.SerializeObject(links);
                             }
                             response.StatusCode = (int)HttpStatusCode.OK;
                         }
-                        catch (Exception e)
-                        {
-                            response.StatusCode = (int)GetStatusCodeForException(e); ;
-                            r = e.Message;
-                        }
+                    }
+                    catch (Exception e)
+                    {
+                        response.StatusCode = (int)GetStatusCodeForException(e); ;
+                        r = e.Message;
+                    }
+                    if (r != null)
+                    {
                         buffer = System.Text.Encoding.UTF8.GetBytes(r.ToString());
                     }
-                    else if (request.HttpMethod == "PUT")
-                    {
-                        UpdateResponse ur = new UpdateResponse() { error = null };
-                        try
-                        {
-                            TextReader reader = new StreamReader(request.InputStream);
-                            String content = reader.ReadToEnd();
-                            ValueObject valObj = JsonConvert.DeserializeObject<ValueObject>(content);
-                            r = client.Write(request.Url, valObj.value);
-                            response.StatusCode = (int)HttpStatusCode.Accepted;
-                        }
-                        catch (Exception e)
-                        {
-                            r = e.Message;
-                            ur.error = e;
-                            response.StatusCode = (int)GetStatusCodeForException(e);
-                        }
-                        String urs = JsonConvert.SerializeObject(ur);
-                        buffer = System.Text.Encoding.UTF8.GetBytes(urs);
-                    }
                 }
-                // Get a response stream and write the response to it.
-                response.ContentLength64 = buffer.Length;
-                response.ContentType = "application/json";
-                System.IO.Stream output = response.OutputStream;
-                output.Write(buffer, 0, buffer.Length);
-                // You must close the output stream.
+                else if (request.HttpMethod == "PUT")
+                {
+                    UpdateResponse ur = new UpdateResponse() { error = null };
+                    try
+                    {
+                        TextReader reader = new StreamReader(request.InputStream);
+                        String content = reader.ReadToEnd();
+                        ValueObject valObj = JsonConvert.DeserializeObject<ValueObject>(content);
+                        r = client.Write(request.Url, valObj.value);
+                        if ((bool)r == true)
+                            response.StatusCode = (int)HttpStatusCode.Accepted;
+                        else
+                            response.StatusCode = (int)HttpStatusCode.NotFound; // Error 404
+                    }
+                    catch (Exception e)
+                    {
+                        r = e.Message;
+                        ur.error = e;
+                        response.StatusCode = (int)GetStatusCodeForException(e);
+                    }
+                    String urs = JsonConvert.SerializeObject(ur);
+                    buffer = System.Text.Encoding.UTF8.GetBytes(urs);
+                }
+            }
+            // Get a response stream and write the response to it.
+            response.ContentLength64 = buffer.Length;
+            response.ContentType = "application/json";
+            System.IO.Stream output = response.OutputStream;
+            try
+            {
+                if (output != null)
+                {
+                    output.Write(buffer, 0, buffer.Length);
+                    // You must close the output stream.
+                    output.Close();
+                }
+            }
+            catch (Exception e)
+            {
+                // Usually get here during debugging if we take to long to responde.
+                // Just clode the stream and move on.
                 output.Close();
             }
+
+            sw.Stop();
+            //Console.WriteLine("RequestReceived -- Overall TimeElapsed: {0}", sw.Elapsed);
 
         }
 

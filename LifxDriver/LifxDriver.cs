@@ -13,7 +13,6 @@ namespace ThingSharp.Drivers
 {
     public class LifxDriver
     {
-        private List<IBulb> mLastDiscoveredBulbs = new List<IBulb>();
         private DiscoveryService mDiscoveryService;
         private BulbService mBulbService;
 
@@ -23,64 +22,198 @@ namespace ThingSharp.Drivers
             mDiscoveryService = new DiscoveryService();
             mBulbService = new BulbService();
         }
-        public List<Object> DiscoverBulbs(int expectedNumber)
-        {            
-            List<IBulb> bulbs = mDiscoveryService.DiscoverAsync(1);
+
+        //--------------------------------------------------------------------
+        // Discovery
+        //--------------------------------------------------------------------
+
+        public void DiscoverBulbs()
+        {
+            // Tell the Lifx Service to start discovering bulbs
+            mDiscoveryService.DiscoverAsync();
+        }
+
+        public List<Object> GetNewBulbs()
+        {
+            // Get a list of all the newly discovered bulbs
+            List<IBulb> bulbs = mDiscoveryService.GetDiscoveredBulbs();
             List<object> bulbIds = new List<object>();
-            foreach(IBulb bulb in bulbs)
+            foreach (IBulb bulb in bulbs)
             {
                 bulbIds.Add(bulb);
             }
-            mLastDiscoveredBulbs = bulbs;
+            
             return bulbIds;
         }
 
-        public bool GetBulbStatus(Object bulb)
+        //--------------------------------------------------------------------
+        // Bulb Label - Get
+        //--------------------------------------------------------------------
+
+        public string GetBulbLabel(Object bulb)
         {
             IBulb b = (IBulb)bulb;
-            bool status = mBulbService.LightGetPower(b);
-            return status;
+            mBulbService.GetLabel(b);
+            return b.Label;
         }
-        public bool SetBulbStatus(Object bulb, bool state)
+
+        public string GetBulbObjectLabel(Object bulb)
         {
             IBulb b = (IBulb)bulb;
-            mBulbService.LightSetPower(b, state);
-            return true;
+
+            if (String.IsNullOrEmpty(b.Label))
+            {
+                System.Diagnostics.Debug.WriteLine("----- Bulb Label not set ----");
+            }
+
+            return b.Label;
         }
+
+        public string GetBulbEndPoint(Object bulb)
+        {
+            IBulb b = (IBulb)bulb;
+            return b.IPEndPoint.ToString();
+        }
+
+        //--------------------------------------------------------------------
+        // Bulb Power - Get/Set
+        //--------------------------------------------------------------------
+
+        public uint? GetBulbPower(Object bulb)
+        {
+            IBulb b = (IBulb)bulb;
+            return mBulbService.LightGetPower(b);
+        }
+        public bool SetBulbPower(Object bulb, object state)
+        {
+            IBulb b = (IBulb)bulb;
+            return mBulbService.LightSetPower(b, (bool)state);
+        }
+
+        //--------------------------------------------------------------------
+        // Bulb Color - Get/Set
+        //--------------------------------------------------------------------
 
         public string GetBulbColor(Object bulb)
         {
             IBulb b = (IBulb)bulb;
-            mBulbService.LightGet(b);
-            return String.Format("{0:X2}{1:X2}{2:X2}{3:X2}", b.Color.A, b.Color.R, b.Color.G, b.Color.B);
+            return mBulbService.LightGetColor(b);
         }
-
-        public object SetBulbColor(Object bulb, string colorName)
+        public object SetBulbColor(Object bulb, object value)
         {
             IBulb b = (IBulb)bulb;
-            System.Drawing.Color color = ParseColor(colorName);
-            mBulbService.LightSetColor(b, color);
-            return true;
+            System.Drawing.Color color = ParseColor((string)value);
+            return mBulbService.LightSetColor(b, color);
         }
+
         System.Drawing.Color ParseColor(string color)
         {
+            // Remove '#' from front if present
             int argb = int.Parse(color.Replace("#", ""), System.Globalization.NumberStyles.HexNumber);
-            return System.Drawing.Color.FromArgb(argb);
-            /*
-            //Parse: rgb(255, 0, 137)
-            const string REGEX = @"\D+";
-            var values = Regex.Split(color, REGEX).Where(x => !string.IsNullOrEmpty(x)).ToArray();
 
-            const int EXPECTED_LENGTH = 3;
-            if (EXPECTED_LENGTH != values.Length)
-                throw new Exception("Error parsing color.");
+            // Add Alpha to RGB value if missing
+            if(color.Length == 6)
+            {
+                color = "FF" + color;
+            }
 
-            var result = System.Drawing.Color.FromArgb(Convert.ToInt32(values[0]),
-                Convert.ToInt32(values[1]),
-                Convert.ToInt32(values[2]));
+            return System.Drawing.Color.FromArgb(argb);            
+        }
 
-            return result;
-            */
+        //--------------------------------------------------------------------
+        // Bulb Brightness - Get/Set
+        //--------------------------------------------------------------------
+
+        public ushort? GetBulbBrightness(Object bulb)
+        {
+            IBulb b = (IBulb)bulb;
+            ushort? brightness = mBulbService.LightGetBrightness(b);
+
+            if (brightness != null)
+            {
+                // Convert brightness to Percentage value
+                brightness = (ushort)Math.Round(((float)brightness / 65535.0) * 100.0, 0);
+            }
+
+            return brightness;
+        }
+        public object SetBulbBrightness(Object bulb, object value)
+        {
+            ushort brightness = Convert.ToUInt16(value);
+
+            // If the conversion to an int failed, then return false
+            if (brightness < 0)
+                return false;
+
+            IBulb b = (IBulb)bulb;
+
+            // convert from % to value in range of 0 to 65535
+            brightness = brightness > (ushort)100 ? (ushort)100 : brightness;
+            brightness = brightness < (ushort)0 ? (ushort)0 : brightness;
+            brightness = (ushort)Math.Round(((float)brightness / 100.0) * 65535.0, 0);
+
+            return mBulbService.LightSetBrightness(b, brightness);
+        }
+
+        //--------------------------------------------------------------------
+        // Bulb Saturation - Get/Set
+        //--------------------------------------------------------------------
+
+        public ushort? GetBulbSaturation(Object bulb)
+        {
+            IBulb b = (IBulb)bulb;
+            ushort? saturation = mBulbService.LightGetSaturation(b);
+
+            if (saturation != null)
+            {
+                // Convert saturation to Percentage value
+                saturation = (ushort)Math.Round(((float)saturation / 65535.0) * 100.0, 0);
+            }
+
+            return saturation;
+        }
+        public object SetBulbSaturation(Object bulb, object value)
+        {
+            ushort saturation = Convert.ToUInt16(value);
+
+            // If the conversion to an int failed, then return false
+            if (saturation < 0)
+                return false;
+
+            IBulb b = (IBulb)bulb;
+
+            // convert from % to value in range of 0 to 65535
+            saturation = saturation > (ushort)100 ? (ushort)100 : saturation;
+            saturation = saturation < (ushort)0 ? (ushort)0 : saturation;
+            saturation = (ushort)Math.Round(((float)saturation / 100.0) * 65535.0, 0);
+
+            return mBulbService.LightSetSaturation(b, saturation);
+        }
+
+        //--------------------------------------------------------------------
+        // Bulb Temperature (Kelvin) - Get/Set
+        //--------------------------------------------------------------------
+
+        public ushort? GetBulbKelvin(Object bulb)
+        {
+            IBulb b = (IBulb)bulb;
+            return mBulbService.LightGetKelvin(b);
+        }
+        public object SetBulbKelvin(Object bulb, object value)
+        {
+            ushort kelvin = Convert.ToUInt16(value);
+
+            // If the conversion to an int failed, then return false
+            if (kelvin < 0)
+                return false;
+
+            IBulb b = (IBulb)bulb;
+
+            // convert from % to value in range of 0 to 65535
+            kelvin = kelvin > (ushort)6500 ? (ushort)6500 : kelvin;
+            kelvin = kelvin < (ushort)2700 ? (ushort)2700 : kelvin;
+
+            return mBulbService.LightSetKelvin(b, kelvin);
         }
     }
 

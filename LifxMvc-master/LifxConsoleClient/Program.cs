@@ -14,20 +14,25 @@ namespace LifxConsoleClient
     {
         static void Main(string[] args)
         {
-            DiscoveryUdpHelper.LocalEndpointIpAddress = new IPAddress(new byte[] { 192, 168, 0, 114 });
+            DiscoveryUdpHelper.LocalEndpointIpAddress = new IPAddress(new byte[] { 192, 168, 1, 111 });
             DiscoveryService disco = new DiscoveryService();
-            List<IBulb> bulbs = disco.DiscoverAsync(1);
-            BulbService bulbService = new BulbService();            
-            IBulb bulb = bulbs[0];
-            ushort b = bulb.Brightness;
-            bulbService.LightSetPower(bulb, true);
-            bulbService.LightSetColor(bulb, System.Drawing.Color.FromArgb(0, 0, 0, 128));
-            bulbService.LightGet(bulb);
-            b = bulb.Brightness;
-            bulbService.LightSetColor(bulb, System.Drawing.Color.FromArgb(0, 0, 128, 0));
-            bulbService.LightGet(bulb);
-            b = bulb.Brightness;
-            bulbService.LightSetPower(bulb, false);
+            //List<IBulb> bulbs = disco.DiscoverAsync();
+            //BulbService bulbService = new BulbService();            
+            //IBulb bulb = bulbs[0];
+            ////ushort b = bulb.Brightness;
+            ////bulbService.LightSetPower(bulb, true);
+            ////System.Threading.Thread.Sleep(500);
+            ////bulbService.LightSetColor(bulb, System.Drawing.Color.FromArgb(255, 0, 0, 128));
+            ////System.Threading.Thread.Sleep(500);
+            ////bulbService.LightGet(bulb);
+            ////System.Threading.Thread.Sleep(500);
+            ////b = bulb.Brightness;
+            ////bulbService.LightSetColor(bulb, System.Drawing.Color.FromArgb(0, 0, 128, 0));
+            ////System.Threading.Thread.Sleep(500);
+            ////bulbService.LightGet(bulb);
+            ////System.Threading.Thread.Sleep(500);
+            ////b = bulb.Brightness;
+            ////bulbService.LightSetPower(bulb, false);
         }
     }
 }

@@ -56,7 +56,7 @@ namespace LifxMvc.Services.Tests
 
 
 
-				var a = Color.FromArgb(RandomValue.Next(0, 256), RandomValue.Next(0, 256), RandomValue.Next(0, 256));
+				var a = Color.FromArgb(255, 55, 122);
 				var hsbk = a.ToHSBK();
 				var b = hsbk.ToColor();
 				if ((a.R != b.R) || (a.B != b.B) || (a.G != b.G))

@@ -18,12 +18,12 @@ namespace LifxMvc.Services
 		void GetLabel(IBulb bulb);
 		void GetWifiFirmware(IBulb bulb);
 		void GetWifiInfo(IBulb bulb);
-		void Initialize(IBulb bulb);
-		void LightGet(IBulb bulb);
-		bool LightGetPower(IBulb bulb);
+		bool Initialize(IBulb bulb);
+        bool LightGet(IBulb bulb, bool forceUpdate = false);
+        uint? LightGetPower(IBulb bulb);
 		//void LightSetColor(IBulb bulb, IHSBK hsbk);
-		void LightSetColor(IBulb bulb, Color color);
-		void LightSetPower(IBulb bulb, bool power);
+        bool LightSetColor(IBulb bulb, Color color);
+        bool LightSetPower(IBulb bulb, bool power);
 		void LightSetWaveform(IBulb bulb, LightSetWaveformCreationContext ctx);
 		void SetLabel(IBulb bulb, string label);
 	}

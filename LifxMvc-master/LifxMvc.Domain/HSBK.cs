@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using static LifxMvc.Domain.ColorExtensions;
+//using LifxMvc.Domain.ColorExtensions;
 
 namespace LifxMvc.Domain
 {
