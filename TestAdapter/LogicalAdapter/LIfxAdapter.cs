@@ -16,7 +16,7 @@ namespace ThingSharp.TestAdapter
 {
     class LifxAdapter : Adapter
     {
-        private LifxDriver driver = null;
+        private LifxDriver driver = null;        
 
         public LifxAdapter(IPAddress localEndpoint)
         {
@@ -56,7 +56,8 @@ namespace ThingSharp.TestAdapter
             try
             {
                 Uri baseUri = ob as Uri;
-                int i = 1;
+                int bulbLabelIndex = 1;
+                int TotalBulbCount = 0;
 
                 while (true)
                 {
@@ -68,7 +69,7 @@ namespace ThingSharp.TestAdapter
                         string label = driver.GetBulbObjectLabel(b);
                         if (String.IsNullOrEmpty(label))
                         {
-                            id_string = String.Format("lifx_{0}", i++);
+                            id_string = String.Format("lifx_{0}", bulbLabelIndex++);
                         }
                         else
                         {
@@ -82,12 +83,14 @@ namespace ThingSharp.TestAdapter
 
                         RaiseOnThingAdded(lifxLamp);
 
+                        TotalBulbCount++;
+
                         Console.WriteLine("Label: " + id_string + ":" + driver.GetBulbEndPoint(b));
                     }
 
                     if (bulbs.Count > 0)
                     {
-                        Console.WriteLine("Found {0} new bulb(s)", bulbs.Count);
+                        Console.WriteLine("Found {0} new bulb(s)  --  Total Bulbs: {1}", bulbs.Count, TotalBulbCount);
                     }
 
                     // Wait some amount of time before checking for new bulbs

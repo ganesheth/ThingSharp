@@ -56,10 +56,6 @@
       <Project>{ea9e14a4-4483-4dcd-abb9-177329595820}</Project>
       <Name>LifxMvc.Contracts</Name>
     </ProjectReference>
-    <ProjectReference Include="..\LifxMvc.Domain.Mocks\LifxMvc.Domain.Mocks.csproj">
-      <Project>{88aa401d-6e14-40c3-ae03-92a07f176bd9}</Project>
-      <Name>LifxMvc.Domain.Mocks</Name>
-    </ProjectReference>
     <ProjectReference Include="..\LifxMvc.Domain\LifxMvc.Domain.csproj">
       <Project>{f8e0beeb-54f9-409f-8f6f-6b80fc8007bd}</Project>
       <Name>LifxMvc.Domain</Name>

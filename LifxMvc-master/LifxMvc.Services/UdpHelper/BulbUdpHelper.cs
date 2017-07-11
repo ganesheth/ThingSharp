@@ -16,6 +16,9 @@ namespace LifxMvc.Services.UdpHelper
 	{
 		const int MAX_TX_PER_SECOND = 1000 / 10;
 		const int MAX_RETRIES = 3;
+        const int LOCK_TIMEOUT_15_SECOND = 15000;
+        private IAsyncResult _currentAsyncResult;
+        private readonly object _objLock = new object();
 
 		bool IsAvailable
 		{
@@ -72,44 +75,60 @@ namespace LifxMvc.Services.UdpHelper
 		}
 
         ConcurrentBag<Task> BulbRequestDataTask { get; set; }
-		public R Send<R>(LifxPacketBase<R> packet, int retry_count = 0, int timeout = 500)
-			where R : LifxResponseBase
-		{
-            
-            this.UdpClient.Close();
-            this.UdpClient = this.CreateUdpClient(EndPoint);
+        public R Send<R>(LifxPacketBase<R> packet, int retry_count = 0, int timeout = 500)
+            where R : LifxResponseBase
+        {
 
-			R result = null;
+            R result = null;
             LifxResponseBase response = null;
 
-            // Start the 'GetResponse' method in a Task thread (this starts the response lisenter
-            //  before we send the packet)
-            var action = new Action(() => response = GetResponse(packet.Header.Source, timeout));
-            var task = Task.Factory.StartNew(action);
+            bool enteredLock = false;
 
-            // Send the data packet to the bulb
-			byte[] data = this.SendImpl(packet);
+            try
+            {
+                enteredLock = Monitor.TryEnter(_objLock, LOCK_TIMEOUT_15_SECOND);
 
-            // wait for the response from the bulb to be read before continuing
-            Task.WaitAll(task);
+                if(enteredLock)
+                {   
+                    // Start the 'GetResponse' method in a Task thread (this starts the response lisenter
+                    //  before we send the packet)
+                    var action = new Action(() => response = GetResponse(packet.Header.Source, timeout));
+                    var task = Task.Factory.StartNew(action);
 
-			if (response is R)
-			{
-				result = response as R;
-			}
-			else 
-			{
+                    // Send the data packet to the bulb
+                    byte[] data = this.SendImpl(packet);
+
+                    // wait for the response from the bulb to be read before continuing
+                    Task.WaitAll(task);
+
+                    //this.UdpClient.Close();// Dispose();
+                    this.UdpClient.Dispose();
+                    this.UdpClient = this.CreateUdpClient(EndPoint);
+                }
+            }
+            finally
+            {
+                if(enteredLock)
+                    Monitor.Exit(_objLock);
+            }
+
+            if (response is R)
+            {
+                result = response as R;
+            }
+            else
+            {
                 // If the response is NULL, then retry sending the data again and increase
                 // the listener wait timeout.
                 if (MAX_RETRIES > retry_count)
-				{
-					packet.Header.Source += 100;
+                {
+                    packet.Header.Source += 100;
                     result = this.Send(packet, ++retry_count, (timeout * 2));
-				}
-			}
+                }
+            }
 
-			return result;
-		}
+            return result;
+        }
 
 		byte[] SendImpl(LifxPacketBase packet)
 		{
@@ -160,24 +179,36 @@ namespace LifxMvc.Services.UdpHelper
                 {
                     result = null;
                     var asyncResult = this.UdpClient.BeginReceive(null, null);
+                    _currentAsyncResult = asyncResult;
 
                     var signaled = asyncResult.AsyncWaitHandle.WaitOne(timeout);
                     if (signaled)
                     {
-                        if (asyncResult.IsCompleted)
+                        if (_currentAsyncResult == asyncResult)
                         {
-                            IPEndPoint sender = new IPEndPoint(IPAddress.Any, 0);
-                            data = this.UdpClient.EndReceive(asyncResult, ref sender);
-                            TraceData(data);
+                            if (asyncResult.IsCompleted)
+                            {
+                                //IPEndPoint sender = new IPEndPoint(IPAddress.Any, 0);
+                                //data = this.UdpClient.EndReceive(asyncResult, ref sender);
 
-                            result = ResponseFactory.Parse(data, sender);
-                            responseSource = result.Source;
-                            responseSequence = result.Sequence;
-                            result.TraceReceived(this.UdpClient.Client.LocalEndPoint);
+                                data = this.UdpClient.EndReceive(asyncResult, ref EndPoint);
+                                TraceData(data);
+
+                                result = ResponseFactory.Parse(data, EndPoint);
+                                responseSource = result.Source;
+                                responseSequence = result.Sequence;
+                                result.TraceReceived(this.UdpClient.Client.LocalEndPoint);
+                            }
+                        }
+                        else
+                        {
+                            Debug.WriteLine("{0}{1}", DateTime.Now.ToString("HH:mm:ss.ffff"), " --- UDP BeginReceive and EndReceive don't match up.");
+                            break;
                         }
                     }
                     else
-                    {// We've timed out.
+                    {
+                        // We've timed out.
                         break;
                     }
                 }

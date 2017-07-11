@@ -60,7 +60,10 @@ namespace ThingSharp.Server
                     throw new Resource.ResourceOperationFailedException();
                 }
             else
-                throw new Resource.ResourceNotFoundException();
+            {
+                //throw new Resource.ResourceNotFoundException();
+                return null;
+            }
         }
 
 

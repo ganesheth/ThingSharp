@@ -63,9 +63,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BulbService.cs" />
-    <Compile Include="BulbServiceMock.cs" />
     <Compile Include="DiscoveryService.cs" />
-    <Compile Include="DiscoveryServiceMock.cs" />
     <Compile Include="Discovery\DiscoveryContext.cs" />
     <Compile Include="Discovery\DiscoveryEventArgs.cs" />
     <Compile Include="HSLConverter.cs" />
@@ -123,10 +121,6 @@
     <ProjectReference Include="..\LifxMvc.Contracts\LifxMvc.Contracts.csproj">
       <Project>{EA9E14A4-4483-4DCD-ABB9-177329595820}</Project>
       <Name>LifxMvc.Contracts</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\LifxMvc.Domain.Mocks\LifxMvc.Domain.Mocks.csproj">
-      <Project>{88AA401D-6E14-40C3-AE03-92A07F176BD9}</Project>
-      <Name>LifxMvc.Domain.Mocks</Name>
     </ProjectReference>
     <ProjectReference Include="..\LifxMvc.Domain\LifxMvc.Domain.csproj">
       <Project>{F8E0BEEB-54F9-409F-8F6F-6B80FC8007BD}</Project>

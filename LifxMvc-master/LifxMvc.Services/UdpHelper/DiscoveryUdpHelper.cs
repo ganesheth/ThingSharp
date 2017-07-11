@@ -20,7 +20,7 @@ namespace LifxMvc.Services.UdpHelper
         private const int PORT_NO = 56700;
         public static IPAddress LocalEndpointIpAddress = IPAddress.Any;
 
-        const int SEND_DISCOVERY_WAIT = 5000; // CJK -- 5 seconds. INCREASE FOR PRODUCTION RELEASE
+        const int SEND_DISCOVERY_WAIT = 30000; 
         const int LISTEN_DICOVERY_TIMEOUT = 10000; // 10 seconds
 
         private ConcurrentDictionary<string, int> discoveredBulbList = new ConcurrentDictionary<string, int>();

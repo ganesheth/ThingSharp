@@ -67,10 +67,4 @@ namespace ThingSharp.TestAdapter
             server.Stop();
         }
     }
-
-
-
-
-
-
 }

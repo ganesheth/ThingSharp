@@ -4,13 +4,14 @@ using LifxNet;
 using LifxNet.Domain;
 using System;
 using System.Drawing;
+using System.Threading.Tasks;
 
 namespace LifxMvc.Services
 {
 	public class BulbService : IBulbService
 	{
-        const int BULB_OFFLINE_RETRY_TIME = 15000;
-        const int BULB_LAST_READ_RETRY_TIME = 15000;
+        const int BULB_OFFLINE_RETRY_TIME = 10000;
+        const int BULB_LAST_READ_RETRY_TIME = 10000;
 
 		R Send<R>(IBulb bulb, LifxPacketBase<R> packet) where R : LifxResponseBase
 		{
@@ -22,6 +23,7 @@ namespace LifxMvc.Services
             {
                 var udp = UdpHelperManager.Instance[packet.IPEndPoint];
                 response = udp.Send(packet);
+
                 if (null != response)
                 {
                     bulb.isOffline = false;
@@ -29,12 +31,12 @@ namespace LifxMvc.Services
                     // Don't update the bulb info if we sent a SET message because the response
                     // has the previous settings. For example, if we change brightness from 25%
                     // to 75%, the response will show brightness as 25%.
-                    if(!IsSetPacket(packet.MessageType))
+                    if (!IsSetPacket(packet.MessageType))
                         BulbExtensions.Set(bulb, (dynamic)response);
                 }
                 else
                 {
-                    bulb.IsOn = false;
+                    //bulb.IsOn = false;
                     bulb.isOffline = true;
                     bulb.LastOfflineCheck = DateTime.UtcNow;
                 }
@@ -97,16 +99,16 @@ namespace LifxMvc.Services
 		{
             bool success = false;
 
-            if (!bulb.isOffline)
-            {
-                var udp = UdpHelperManager.Instance[packet.IPEndPoint];
-                udp.SendAsync(packet);
-                success = true;
-            }
-            else
-            {
-                //return false;
-            }
+            //if (!bulb.isOffline)
+            //{
+            //    var udp = UdpHelperManager.Instance[packet.IPEndPoint];
+            //    udp.SendAsync(packet);
+            //    success = true;
+            //}
+            //else
+            //{
+            //    //return false;
+            //}
 
             return success;
 		}
@@ -135,6 +137,8 @@ namespace LifxMvc.Services
 
                 var packet = new LightGetPacket(bulb);
                 var response = this.Send(bulb, packet);
+
+                
 
                 if (response != null)
                 {                    
@@ -254,7 +258,7 @@ namespace LifxMvc.Services
             // every property asking the bulb for the same info.
             if (IsOkToReadFromBulb(bulb.LastPowerRequest))
             {
-                // update the Last  Request time first so other threads that coming in 
+                // update the Last Request time first so other threads that coming in 
                 // immediatly don't try reading as well
                 bulb.LastPowerRequest = DateTime.UtcNow;
 
@@ -293,7 +297,7 @@ namespace LifxMvc.Services
 		public void LightSetWaveform(IBulb bulb, LightSetWaveformCreationContext ctx)
 		{
 			var packet = new LightSetWaveformPacket(bulb, ctx);
-			this.SendAsync(bulb, packet);
+			//this.SendAsync(bulb, packet);
 		}
         //--------------------------------------------------------------------
 

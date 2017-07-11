@@ -15,6 +15,9 @@ namespace LifxMvc.Domain
 		Color _color;
 		string _colorString;
 
+        bool _isOffline;
+        int _failed_response_count = 0;
+
 		public int BulbId { get; private set; }
 		public string ColorString
 		{
@@ -108,8 +111,40 @@ namespace LifxMvc.Domain
         public DateTime LastStateRequest { get; set; }
         public DateTime LastPowerRequest { get; set; }
 
-        public bool isOffline { get; set; }
         public DateTime LastOfflineCheck { get; set; }
+        public bool isOffline 
+        {
+            get
+            {
+                return _isOffline;
+            }
+            set
+            {
+                bool offline_flag = value;
+                if(offline_flag == true)
+                {
+                    _failed_response_count += 1;
+
+                    // Note: This code currently has no effect because it will set the
+                    //       bulb to offline after the first failure. If we want to increase
+                    //       the tries before setting the bulb to offline, then set the value
+                    //       below to something greater than zero.
+
+                    if(_failed_response_count > 0)
+                    {
+                        _isOffline = true;
+                        IsOn = false;
+                    }
+                }
+                else
+                {
+                    _failed_response_count = 0;
+                    _isOffline = false;
+                }
+
+            }
+        }
+        
 
 		public uint Vendor { get; set; }
 		public LifxProductEnum Product { get; set; }

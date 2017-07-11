@@ -26,7 +26,7 @@ namespace LifxMvc.Services
         {
             List<IBulb> bulbList = new List<IBulb>();
 
-            // Copy the bulb list send back because we are going to clear out the new bulb list before returning
+            // Copy the bulb list to send back because we are going to clear out the new bulb list before returning
             foreach (IBulb b in NewBulbList)
             {
                 bulbList.Add(b);                

@@ -61,10 +61,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\RandomValue\RandomValue.csproj">
-      <Project>{FA23D97F-BDE3-4F4A-95F7-6A7A15E934FE}</Project>
-      <Name>RandomValue</Name>
-    </ProjectReference>
     <ProjectReference Include="..\LifxMvc.Contracts\LifxMvc.Contracts.csproj">
       <Project>{EA9E14A4-4483-4DCD-ABB9-177329595820}</Project>
       <Name>LifxMvc.Contracts</Name>

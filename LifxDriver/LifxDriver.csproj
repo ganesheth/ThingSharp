@@ -40,9 +40,6 @@
     <Reference Include="LifxMvc.Domain">
       <HintPath>..\LifxMvc-master\LifxMvc.Services\bin\Debug\LifxMvc.Domain.dll</HintPath>
     </Reference>
-    <Reference Include="LifxMvc.Domain.Mocks">
-      <HintPath>..\LifxMvc-master\LifxMvc.Services\bin\Debug\LifxMvc.Domain.Mocks.dll</HintPath>
-    </Reference>
     <Reference Include="LifxMvc.Services">
       <HintPath>..\LifxMvc-master\LifxMvc.Services\bin\Debug\LifxMvc.Services.dll</HintPath>
     </Reference>
