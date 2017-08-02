@@ -3,23 +3,19 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.30110.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HTTPBinding", "HTTPBinding\HTTPBinding.csproj", "{04B4DDF8-E002-4BF9-8D79-38642993EBE5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HTTPBinding", "ThingSharp\HTTPBinding\HTTPBinding.csproj", "{04B4DDF8-E002-4BF9-8D79-38642993EBE5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThingSharpTypes", "ThingSharpTypes\ThingSharpTypes.csproj", "{12C4E51C-D17C-4EA4-B08E-B390FBA3C0FF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartDeviceDriver", "ThingSharp\SmartDeviceDriver\SmartDeviceDriver.csproj", "{D2022E2E-97EC-44EB-9B9F-6B8644034454}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThingContainer", "ThingContainer\ThingContainer.csproj", "{C03D1D95-2C59-463B-B189-282FC3FED7DC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThingContainer", "ThingSharp\ThingContainer\ThingContainer.csproj", "{C03D1D95-2C59-463B-B189-282FC3FED7DC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThingServer", "ThingServer\ThingServer.csproj", "{8FAA0E24-D507-48D2-9C34-7B7CD1E074A3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThingServer", "ThingSharp\ThingServer\ThingServer.csproj", "{8FAA0E24-D507-48D2-9C34-7B7CD1E074A3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestAdapter", "TestAdapter\TestAdapter.csproj", "{C4D9FF39-C8DA-4EBD-9475-0867336BE6AF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThingSharpTypes", "ThingSharp\ThingSharpTypes\ThingSharpTypes.csproj", "{12C4E51C-D17C-4EA4-B08E-B390FBA3C0FF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThingUtils", "ThingUtils\ThingUtils.csproj", "{3A9150A4-EF0F-42B9-A88E-98C2C6370D8C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThingUtils", "ThingSharp\ThingUtils\ThingUtils.csproj", "{3A9150A4-EF0F-42B9-A88E-98C2C6370D8C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LifxDriver", "LifxDriver\LifxDriver.csproj", "{D2022E2E-97EC-44EB-9B9F-6B8644034454}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OsramDriver", "OsramDriver\OsramDriver.csproj", "{8C559B31-7AA3-47C5-9B51-9CF62CEA4574}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestConsole", "TestConsole\TestConsole.csproj", "{14D7DD5C-154D-4F5D-BE0D-337B208A84B7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThingAdapter", "ThingSharp\ThingAdapter\ThingAdapter.csproj", "{C4D9FF39-C8DA-4EBD-9475-0867336BE6AF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -31,10 +27,10 @@ Global
 		{04B4DDF8-E002-4BF9-8D79-38642993EBE5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{04B4DDF8-E002-4BF9-8D79-38642993EBE5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{04B4DDF8-E002-4BF9-8D79-38642993EBE5}.Release|Any CPU.Build.0 = Release|Any CPU
-		{12C4E51C-D17C-4EA4-B08E-B390FBA3C0FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{12C4E51C-D17C-4EA4-B08E-B390FBA3C0FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{12C4E51C-D17C-4EA4-B08E-B390FBA3C0FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{12C4E51C-D17C-4EA4-B08E-B390FBA3C0FF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D2022E2E-97EC-44EB-9B9F-6B8644034454}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D2022E2E-97EC-44EB-9B9F-6B8644034454}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D2022E2E-97EC-44EB-9B9F-6B8644034454}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D2022E2E-97EC-44EB-9B9F-6B8644034454}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C03D1D95-2C59-463B-B189-282FC3FED7DC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C03D1D95-2C59-463B-B189-282FC3FED7DC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C03D1D95-2C59-463B-B189-282FC3FED7DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -43,31 +39,20 @@ Global
 		{8FAA0E24-D507-48D2-9C34-7B7CD1E074A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8FAA0E24-D507-48D2-9C34-7B7CD1E074A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8FAA0E24-D507-48D2-9C34-7B7CD1E074A3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C4D9FF39-C8DA-4EBD-9475-0867336BE6AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C4D9FF39-C8DA-4EBD-9475-0867336BE6AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C4D9FF39-C8DA-4EBD-9475-0867336BE6AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C4D9FF39-C8DA-4EBD-9475-0867336BE6AF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{12C4E51C-D17C-4EA4-B08E-B390FBA3C0FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{12C4E51C-D17C-4EA4-B08E-B390FBA3C0FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{12C4E51C-D17C-4EA4-B08E-B390FBA3C0FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{12C4E51C-D17C-4EA4-B08E-B390FBA3C0FF}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3A9150A4-EF0F-42B9-A88E-98C2C6370D8C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3A9150A4-EF0F-42B9-A88E-98C2C6370D8C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3A9150A4-EF0F-42B9-A88E-98C2C6370D8C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3A9150A4-EF0F-42B9-A88E-98C2C6370D8C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D2022E2E-97EC-44EB-9B9F-6B8644034454}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D2022E2E-97EC-44EB-9B9F-6B8644034454}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D2022E2E-97EC-44EB-9B9F-6B8644034454}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D2022E2E-97EC-44EB-9B9F-6B8644034454}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8C559B31-7AA3-47C5-9B51-9CF62CEA4574}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8C559B31-7AA3-47C5-9B51-9CF62CEA4574}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8C559B31-7AA3-47C5-9B51-9CF62CEA4574}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8C559B31-7AA3-47C5-9B51-9CF62CEA4574}.Release|Any CPU.Build.0 = Release|Any CPU
-		{14D7DD5C-154D-4F5D-BE0D-337B208A84B7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{14D7DD5C-154D-4F5D-BE0D-337B208A84B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{14D7DD5C-154D-4F5D-BE0D-337B208A84B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{14D7DD5C-154D-4F5D-BE0D-337B208A84B7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C4D9FF39-C8DA-4EBD-9475-0867336BE6AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C4D9FF39-C8DA-4EBD-9475-0867336BE6AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C4D9FF39-C8DA-4EBD-9475-0867336BE6AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C4D9FF39-C8DA-4EBD-9475-0867336BE6AF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
 	EndGlobalSection
 EndGlobal
