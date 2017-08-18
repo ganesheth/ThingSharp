@@ -1,0 +1,141 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{9FAE5E49-B913-47E0-A5E0-DB83F3A82FB1}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>LifxMvc.Services</RootNamespace>
+    <AssemblyName>LifxMvc.Services</AssemblyName>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;xTRACE_PACKETS</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Colorspace, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Colorspace.1.0.2\lib\net40\Colorspace.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Practices.ServiceLocation, Version=1.3.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\CommonServiceLocator.1.3\lib\portable-net4+sl5+netcore45+wpa81+wp8\Microsoft.Practices.ServiceLocation.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Practices.Unity, Version=4.0.0.0, Culture=neutral, PublicKeyToken=6d32ff45e0ccc69f, processorArchitecture=MSIL">
+      <HintPath>..\packages\Unity.4.0.1\lib\net45\Microsoft.Practices.Unity.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Practices.Unity.Configuration, Version=4.0.0.0, Culture=neutral, PublicKeyToken=6d32ff45e0ccc69f, processorArchitecture=MSIL">
+      <HintPath>..\packages\Unity.4.0.1\lib\net45\Microsoft.Practices.Unity.Configuration.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Practices.Unity.RegistrationByConvention, Version=4.0.0.0, Culture=neutral, PublicKeyToken=6d32ff45e0ccc69f, processorArchitecture=MSIL">
+      <HintPath>..\packages\Unity.4.0.1\lib\net45\Microsoft.Practices.Unity.RegistrationByConvention.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="BulbService.cs" />
+    <Compile Include="DiscoveryService.cs" />
+    <Compile Include="Discovery\DiscoveryContext.cs" />
+    <Compile Include="Discovery\DiscoveryEventArgs.cs" />
+    <Compile Include="HSLConverter.cs" />
+    <Compile Include="LifxNet\Constants.cs" />
+    <Compile Include="LifxNet\Extensions.cs" />
+    <Compile Include="LifxNet\Packets\LightSetWaveformPacket.cs" />
+    <Compile Include="LifxNet\Packets\UnknownPacket.cs" />
+    <Compile Include="LifxNet\Responses\DeviceAcknowledgementResponse.cs" />
+    <Compile Include="LifxNet\Responses\DeviceEchoResponse.cs" />
+    <Compile Include="LifxNet\Responses\DeviceStateGroupResponse.cs" />
+    <Compile Include="LifxNet\Responses\DeviceStateHostFirmwareResponse.cs" />
+    <Compile Include="LifxNet\Responses\DeviceStateHostInfoResponse.cs" />
+    <Compile Include="LifxNet\Responses\DeviceStateInfoResponse.cs" />
+    <Compile Include="LifxNet\Responses\DeviceStateLabelResponse.cs" />
+    <Compile Include="LifxNet\Responses\DeviceStateLocationResponse.cs" />
+    <Compile Include="LifxNet\Responses\DeviceStatePowerResponse.cs" />
+    <Compile Include="LifxNet\Responses\DeviceStateServiceResponse.cs" />
+    <Compile Include="LifxNet\Responses\DeviceStateTimeResponse.cs" />
+    <Compile Include="LifxNet\Responses\DeviceStateVersionResponse.cs" />
+    <Compile Include="LifxNet\Responses\DeviceStateWifiFirmwareResponse.cs" />
+    <Compile Include="LifxNet\Responses\DeviceStateWifiInfoResponse.cs" />
+    <Compile Include="LifxNet\Responses\LightStatePowerResponse.cs" />
+    <Compile Include="LifxNet\Responses\LightStateResponse.cs" />
+    <Compile Include="LifxNet\Packets\DeviceEchoRequestPacket.cs" />
+    <Compile Include="LifxNet\Packets\DeviceGetGroupPacket.cs" />
+    <Compile Include="LifxNet\Packets\DeviceGetHostFirmwarePacket.cs" />
+    <Compile Include="LifxNet\Packets\DeviceGetHostInfoPacket.cs" />
+    <Compile Include="LifxNet\Packets\DeviceGetInfoPacket.cs" />
+    <Compile Include="LifxNet\Packets\DeviceGetLabelPacket.cs" />
+    <Compile Include="LifxNet\Packets\DeviceGetLocationPacket.cs" />
+    <Compile Include="LifxNet\Packets\DeviceGetPowerPacket.cs" />
+    <Compile Include="LifxNet\Packets\DeviceGetServicePacket.cs" />
+    <Compile Include="LifxNet\Packets\DeviceGetVersionPacket.cs" />
+    <Compile Include="LifxNet\Packets\DeviceGetWifiFirmwarePacket.cs" />
+    <Compile Include="LifxNet\Packets\DeviceGetWifiInfoPacket.cs" />
+    <Compile Include="LifxNet\Packets\DeviceSetLabelPacket.cs" />
+    <Compile Include="LifxNet\Packets\DeviceSetPowerPacket.cs" />
+    <Compile Include="LifxNet\FrameHeader.cs" />
+    <Compile Include="LifxNet\Packets\_LifxPacketBase.cs" />
+    <Compile Include="LifxNet\Responses\_LifxResponseBase.cs" />
+    <Compile Include="LifxNet\Packets\LightGetPacket.cs" />
+    <Compile Include="LifxNet\Packets\LightGetPowerPacket.cs" />
+    <Compile Include="LifxNet\Packets\LightSetColorPacket.cs" />
+    <Compile Include="LifxNet\Packets\LightSetPowerPacket.cs" />
+    <Compile Include="LifxNet\MessageType.cs" />
+    <Compile Include="LifxNet\Responses\UnknownResponse.cs" />
+    <Compile Include="DebugLogger.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UdpHelper\BulbUdpHelper.cs" />
+    <Compile Include="UdpHelper\BulbUdpHelperManager.cs" />
+    <Compile Include="UdpHelper\DiscoveryUdpHelper.cs" />
+    <Compile Include="WaitableQueue.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\LifxMvc.Contracts\LifxMvc.Contracts.csproj">
+      <Project>{EA9E14A4-4483-4DCD-ABB9-177329595820}</Project>
+      <Name>LifxMvc.Contracts</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\LifxMvc.Domain\LifxMvc.Domain.csproj">
+      <Project>{F8E0BEEB-54F9-409F-8F6F-6B80FC8007BD}</Project>
+      <Name>LifxMvc.Domain</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
