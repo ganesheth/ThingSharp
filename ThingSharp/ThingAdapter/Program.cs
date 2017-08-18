@@ -19,6 +19,9 @@ namespace ThingSharp.ThingSharp
         private static ThingServer _Server = null;
         private static ArgParser _Args = null;
 
+        /// <summary>
+        /// Main Entry point
+        /// </summary>
         static void Main(string[] args)
         {
             string myExeDir = System.IO.Path.GetFullPath(Assembly.GetExecutingAssembly().Location);
@@ -35,10 +38,7 @@ namespace ThingSharp.ThingSharp
             }
             else
             {
-                // running as console app
-
-                // Check if also running as a service
-                // TODO: add service check
+                // running as console app                
 
                 if (_Args.exists(@"-?") || _Args.exists(@"/?"))
                 {
@@ -66,19 +66,25 @@ namespace ThingSharp.ThingSharp
                     }
                     else
                     {
+                        // Check if also running as a service
+                        CheckIfServiceIsInstalled(appName);
+
                         // Run the Program normally
                         Start(args, false);
 
                         //Thats it. Press any key to end the show.
                         Console.Read();
                         Stop();
-                        Environment.Exit(0);
+                        
                     }
                 }
             }
         }
         //--------------------------------------------------------------------
 
+        /// <summary>
+        /// Service Start
+        /// </summary>
         public class Service : ServiceBase
         {
             public Service()
@@ -98,6 +104,9 @@ namespace ThingSharp.ThingSharp
         }
         //--------------------------------------------------------------------
 
+        /// <summary>
+        /// Does all the work to link upa nd start the Adapter
+        /// </summary>
         private static void Start(string[] args, bool isService)
         {
             IPAddress localEndpoint;
@@ -159,6 +168,7 @@ namespace ThingSharp.ThingSharp
             //discover datapoints in the sub-system below and then create intances of Things (which will be stored 
             //in the resource container of the ThingServer).
             bool successful = adapter1.Initialize(baseUri, isService);
+            _Server.SetStatus(successful);
 
             if (successful)
             {
@@ -169,12 +179,21 @@ namespace ThingSharp.ThingSharp
         }
         //--------------------------------------------------------------------
 
+        /// <summary>
+        /// Stops all listening threads and closes socket bindings
+        /// </summary>
         private static void Stop()
         {
             _Server.Stop();
+
+            // TEMPORARY CODE. Force service to stop quickly for debugging
+            Environment.Exit(0);
         }
         //--------------------------------------------------------------------
 
+        /// <summary>
+        /// Checks if launched as a Service or Console App
+        /// </summary>
         private static bool IsService(string serviceName)
         {
             bool isService = false;
@@ -193,6 +212,9 @@ namespace ThingSharp.ThingSharp
         }
         //--------------------------------------------------------------------
 
+        /// <summary>
+        /// Installs the application as a service
+        /// </summary>
         private static void InstallService()
         {
             // Since this is running as a Console App and we got the service flag, then
@@ -240,6 +262,9 @@ namespace ThingSharp.ThingSharp
         }
         //--------------------------------------------------------------------
 
+        /// <summary>
+        /// Uninstalls the service
+        /// </summary>
         private static void UninstallService()
         {
             try
@@ -266,6 +291,32 @@ namespace ThingSharp.ThingSharp
         }
         //--------------------------------------------------------------------
 
+        /// <summary>
+        /// Report is service is installed
+        /// </summary>
+        private static void CheckIfServiceIsInstalled(string appName)
+        {
+            try
+            {
+                ServiceManager SvcMgr = new ServiceManager();
+                if(SvcMgr.ServiceIsInstalled(appName))
+                {
+                    // Only report if the service is install, otherwise do nothing
+                    Console.WriteLine("---------------------------------");
+                    Console.WriteLine("{0} is also installed as a service", appName);
+                    Console.WriteLine("---------------------------------");                    
+                }
+            }
+            catch (Exception e)
+            {
+                // do nothing
+            }
+        }
+        //--------------------------------------------------------------------
+
+        /// <summary>
+        /// Display Console Usage
+        /// </summary>
         private static void usage(string appName)
         {
             string description = String.Format(

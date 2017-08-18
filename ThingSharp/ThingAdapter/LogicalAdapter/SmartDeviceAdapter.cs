@@ -64,8 +64,16 @@ namespace ThingSharp.ThingSharp
                 // Replace the text 'REPLACE_WITH_DATA_MODEL_CLASS_NAME' with the actual class name from the Data Model that was imported from DCC                
                 //REPLACE_WITH_DATA_MODEL_CLASS_NAME smartDevice = new REPLACE_WITH_DATA_MODEL_CLASS_NAME(new Uri(baseUri, replace_with_unique_object_label_string));
 
-                // Set some properties of the new Bulb Object
+                // REQUIRED:
+                // Need to set the following properties of the new Smart Device Object:
+                // 
+                //  -The device ID. This is used in the address path.
                 //smartDevice.Id = replace_with_unique_object_label_string;
+                //
+                //  - SubsystemContext. This just holds the object model of the smart device. Depending on how
+                //                      Smart Device Service is written, this may or maynot be needed. In the Lifx
+                //                      example project, the bulb object is stored and passed back to the Lifx Service
+                //                      for every call so it knows what bulb we need to comminucate with.
                 //smartDevice.SubsystemContext = device;
 
                 // Add the new object to the dictionary

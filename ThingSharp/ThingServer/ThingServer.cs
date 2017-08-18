@@ -10,11 +10,13 @@ namespace ThingSharp.Server
 {
     public class ThingServer : IBindingClient
     {
+        private bool _Status;
         private ProtocolBinding mBinding;
         private ThingContainer mThings;
         private Adapter mAdapter;
         public ThingServer(ProtocolBinding binding, Adapter adapter)
         {
+            _Status = true;
             mBinding = binding;
             mBinding.AddClient(this);
             mThings = new ThingContainer();
@@ -33,6 +35,11 @@ namespace ThingSharp.Server
             mBinding.StopListening();
         }
 
+        public void SetStatus(bool status)
+        {
+            _Status = status;
+        }
+
         private List<HypermediaLink> GetThingLinks()
         {
             List<HypermediaLink> thingUris = new List<HypermediaLink>();
@@ -49,6 +56,11 @@ namespace ThingSharp.Server
             {
                 return GetThingLinks();
             }
+            else if(uri.AbsolutePath.ToLower() == "/status")
+            {
+                return _Status;
+            }
+
             Resource resource = mThings.ResolveUrl(uri);
 
             if (resource != null)

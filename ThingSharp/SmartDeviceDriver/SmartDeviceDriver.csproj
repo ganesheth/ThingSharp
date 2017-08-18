@@ -34,8 +34,9 @@
     <Reference Include="Colorspace">
       <HintPath>..\LifxMvc-master\LifxMvc.Services\bin\Debug\Colorspace.dll</HintPath>
     </Reference>
-    <Reference Include="LifxMvc.Contracts">
+    <Reference Include="LifxMvc.Contracts, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\LifxMvc-master\LifxMvc.Services\bin\Debug\LifxMvc.Contracts.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
     </Reference>
     <Reference Include="LifxMvc.Domain">
       <HintPath>..\LifxMvc-master\LifxMvc.Services\bin\Debug\LifxMvc.Domain.dll</HintPath>

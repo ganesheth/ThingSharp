@@ -16,7 +16,7 @@ namespace LifxMvc.Services.UdpHelper
 	{
 		const int MAX_TX_PER_SECOND = 1000 / 10;
 		const int MAX_RETRIES = 3;
-        const int LOCK_TIMEOUT_15_SECOND = 15000;
+        const int LOCK_TIMEOUT_10_SECOND = 10000;
         private IAsyncResult _currentAsyncResult;
         private readonly object _objLock = new object();
 
@@ -51,8 +51,7 @@ namespace LifxMvc.Services.UdpHelper
 
 		UdpClient CreateUdpClient(IPEndPoint ep)
 		{
-			var client = new UdpClient(ep.Address.ToString(),
-				ep.Port);
+			var client = new UdpClient(ep.Address.ToString(), ep.Port);
 
             client.DontFragment = true;
 
@@ -86,7 +85,7 @@ namespace LifxMvc.Services.UdpHelper
 
             try
             {
-                enteredLock = Monitor.TryEnter(_objLock, LOCK_TIMEOUT_15_SECOND);
+                enteredLock = Monitor.TryEnter(_objLock, LOCK_TIMEOUT_10_SECOND);
 
                 if (enteredLock)
                 {   
@@ -129,29 +128,29 @@ namespace LifxMvc.Services.UdpHelper
             return result;
         }
 
-		byte[] SendImpl(LifxPacketBase packet)
-		{
-			byte[] result = null;
-			try
-			{
-				var data = packet.Serialize();
+        byte[] SendImpl(LifxPacketBase packet)
+        {
+            byte[] result = null;
+            try
+            {
+                var data = packet.Serialize();
 
-				TraceData(data);
+                TraceData(data);
 
-				this.Throttle();
-				var sent = this.UdpClient.Send(data, data.Length);
-				this.LastSentTime = DateTime.Now;
-				packet.TraceSent(this.UdpClient.Client.LocalEndPoint);
+                this.Throttle();
+                var sent = this.UdpClient.Send(data, data.Length);
+                this.LastSentTime = DateTime.Now;
+                packet.TraceSent(this.UdpClient.Client.LocalEndPoint);
 
-				Debug.Assert(sent == data.Length);
-			}
-			catch (Exception ex)
-			{
-				Debug.WriteLine(" Exception {0}", ex.Message);
-				throw;
-			}
-			return result;
-		}
+                Debug.Assert(sent == data.Length);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("ERROR: {0} {1}", "SendImpl", ex.Message);
+                throw;
+            }
+            return result;
+        }
 
 		void Throttle()
 		{
@@ -174,6 +173,13 @@ namespace LifxMvc.Services.UdpHelper
 
             try
             {
+                // LifX Description of Source:
+                // Source identifier: unique value set by the client, used by responses
+                //
+                // This means the Source in the response packet needs to match the source value in the packet 
+                // we sent to the bulb. So, if the reponseSource is less than the value of the Source value we 
+                // just sent in this packet, then it's and old response and we can drop it.
+                // Every time we send out a packet, the frameSource is incremented by 1.
                 while (responseSource < frameSource)//Compare sources in order to match the packet to the response.
                 {
                     result = null;
@@ -211,8 +217,8 @@ namespace LifxMvc.Services.UdpHelper
             }
             catch (Exception e)
             {
-                Debug.WriteLine(e.ToString());
-                //throw;
+                Debug.WriteLine("ERROR: {0} {1}", "GetResponse", e.Message);
+                // don't throw. 
             }
 
 			return result;

@@ -13,6 +13,7 @@ namespace ThingSharp.Types
 
         public virtual bool Initialize(Uri baseUri, bool isRunningAsService = false) { return false; }
         public virtual void Stop() { }
+        public virtual Object Status() { return null; }
         public virtual Object Read(Resource obj) { return null; }
         public virtual Object Write(Resource obj, Object value) { return null; }
 

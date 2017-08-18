@@ -52,6 +52,12 @@ namespace ThingSharp.ThingSharp
         }
         //--------------------------------------------------------------------
 
+        public override object Status()
+        {
+            return true;
+        }
+        //--------------------------------------------------------------------
+
         public override void Stop()
         {
             driver.StopDiscovery();

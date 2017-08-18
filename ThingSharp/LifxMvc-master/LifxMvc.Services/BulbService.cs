@@ -28,17 +28,17 @@ namespace LifxMvc.Services
 
 	public class BulbService : IBulbService
 	{
-        const int BULB_OFFLINE_RETRY_TIME = 20000;
-        const int BULB_LAST_READ_RETRY_TIME = 10000;        
+        const int BULB_OFFLINE_RETRY_TIME = 10000;
+        const int BULB_LAST_READ_RETRY_TIME = 1000;        
 
         private BulbLock _BulbLock = new BulbLock();
 
 		R Send<R>(IBulb bulb, LifxPacketBase<R> packet) where R : LifxResponseBase
 		{
-            var response = (R)null;    
-        
-            // If the bulb is Offline and we haven't waited 15 seconds yet, then skip any communication
-            // with the bulb and send back a NULL response
+            var response = (R)null;
+
+            // If the bulb is Offline and we haven't waited BULB_OFFLINE_RETRY_TIME seconds yet, then 
+            // skip any communication with the bulb and send back a NULL response
             if (BulbOfflineCheck(bulb))
             {
                 var udp = UdpHelperManager.Instance[packet.IPEndPoint];

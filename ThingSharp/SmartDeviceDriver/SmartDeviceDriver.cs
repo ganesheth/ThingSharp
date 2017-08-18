@@ -10,6 +10,7 @@ namespace ThingSharp.Drivers
 {
     public class SmartDeviceDriver
     {
+        // #TODO
         // Example: Setting up a global variable to the Smart Device Service (DLL)
         //          The 'DeviceService' reference will change to match the Class name
         //          defined in the DLL being referenced.
@@ -19,6 +20,7 @@ namespace ThingSharp.Drivers
         // Constructor 
         public SmartDeviceDriver(IPAddress localEndpoint)
         {
+            // #TODO
             // Example: Initializing the Device Service instance.
             //mDeviceService = new DeviceService();
         }
@@ -31,6 +33,7 @@ namespace ThingSharp.Drivers
         {
             List<object> smartDevices = new List<object>();
 
+            // #TODO - Add discovery call to Smart Device Service Library
             // Example: Call the Discovery Service to find a list of all the 
             //          devices on the network. The mewthod being called will
             //          need to change to match the service(DLL) being referenced.
@@ -45,14 +48,17 @@ namespace ThingSharp.Drivers
         // Read / Write Property Calls Go Below
         //********************************************************************
 
+        // #TODO - Add read/write calls to the Smart Device Service Library
+        // Example:
         // Power - Get/Set
-        //public uint? GetDevicePower(Object device)
+        // Note: Update the return value to appropraite type
+        //public <variable_type> GetDevicePower(Object device)
         //{
         //    IDevice b = (IDevice)device;
         //    return mDeviceService.DeviceGetPower(b);
         //}
         ////-------------------------------------------------------------
-        //public bool SetDevicePower(Object device, object state)
+        //public <variable_type> SetDevicePower(Object device, object state)
         //{
         //    IDevice b = (IDevice)device;
         //    return mDeviceService.DeviceSetPower(b, (bool)state);
